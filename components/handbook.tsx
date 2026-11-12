@@ -124,7 +124,7 @@ const SLIDES: { title: string; body: () => ReactNode }[] = [
             </tbody>
           </table>
         </div>
-        <p className="mt-4">Under the progress bar, “What is missing / Next step” lists every gap in plain words, and the one thing to do next. The inquiry is split into sections — route, pieces, documents, checklist, quote, activity. Sections with open items are marked. Click a missing line to open that section and highlight the field. Download quote PDF saves only the quotation as a PDF file.</p>
+        <p className="mt-4">Under the progress bar, “What is missing / Next step” lists every gap in plain words, and the one thing to do next. The inquiry is split into numbered sections 1–6 — route, pieces, documents, checklist, quote, activity. Each section has a short how-to with numbered steps. Sections with open items are marked. Click a missing line to open that section and highlight the field. Download quote PDF saves only the quotation as a PDF file.</p>
         <p className="mt-4">The permit list is a reminder. This demo does not file a permit.</p>
       </>
     ),

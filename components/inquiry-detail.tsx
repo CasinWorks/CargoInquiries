@@ -16,6 +16,7 @@ import { QuoteBuilder } from "@/components/quote-builder";
 import { Tip } from "@/components/shell";
 import { FollowUpWho, LogUpdate, MoveStageDialog, SourceBadge, TimelineMark } from "@/components/order-updates";
 import { NextStepPanel } from "@/components/next-step";
+import { SectionTutorial } from "@/components/section-tutorial";
 import { StageProgress } from "@/components/stage-progress";
 import type { LogKind } from "@/lib/order";
 import { checkPiece } from "@/lib/calc";
@@ -202,8 +203,19 @@ export function InquiryDetail({ id }: { id: string }) {
                       : "min-h-14 border border-zinc-300 bg-white px-3 py-2 text-left text-zinc-800"
                 }
               >
-                <span className="block text-[15px] font-medium">{item.label}</span>
-                <span className={`mt-0.5 block text-[12px] ${active ? "text-zinc-300" : "text-zinc-500"}`}>
+                <span className="flex items-center gap-2">
+                  <span
+                    className={
+                      active
+                        ? "inline-flex size-6 items-center justify-center border border-white/40 text-[12px] font-medium"
+                        : "inline-flex size-6 items-center justify-center border border-zinc-400 text-[12px] font-medium"
+                    }
+                  >
+                    {item.number}
+                  </span>
+                  <span className="text-[15px] font-medium">{item.label}</span>
+                </span>
+                <span className={`mt-1 block pl-8 text-[12px] ${active ? "text-zinc-300" : "text-zinc-500"}`}>
                   {counts.needed > 0
                     ? `${counts.needed} required missing`
                     : counts.additional > 0
@@ -215,12 +227,18 @@ export function InquiryDetail({ id }: { id: string }) {
           })}
         </nav>
         <p className="no-print mt-2 text-[12px] text-zinc-500">
-          One section at a time. Dark border means something is still open. Click a Missing line above to jump to the field.
+          Work sections in order 1–6 when you can. Dark border means something is still open. Click a Missing line above to jump to the field.
         </p>
+        <div className="mt-3">
+          <SectionTutorial section={section} />
+        </div>
 
         {section === "summary" ? (
         <section className="mt-4 grid gap-3" id="summary">
-          <SectionTitle>Route & terms</SectionTitle>
+          <SectionTitle>
+            <SectionNumber n={1} />
+            Route & terms
+          </SectionTitle>
           <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
             <Fact label="Commodity" value={inquiry.commodity || "—"} />
             <Fact label="Stage" value={statusLabel(inquiry.status)} />
@@ -412,7 +430,10 @@ export function InquiryDetail({ id }: { id: string }) {
 
         {section === "pieces" ? (
         <section className="mt-4 grid gap-3" id="pieces" data-tour="pieces">
-          <SectionTitle>Piece list</SectionTitle>
+          <SectionTitle>
+            <SectionNumber n={2} />
+            Piece list
+          </SectionTitle>
           <p className="text-[12px] text-zinc-500">Packed dimensions as recorded. Weight is per piece. Line freight tons are the greater of that line’s CBM and metric tons.</p>
           <PieceReadout pieces={inquiry.pieces} deckHeightM={inquiry.deckHeightM} />
           <PieceExtrasEditor
@@ -425,7 +446,10 @@ export function InquiryDetail({ id }: { id: string }) {
 
         {section === "documents" ? (
         <section className="mt-4 grid gap-3" id="documents">
-          <SectionTitle>Documents</SectionTitle>
+          <SectionTitle>
+            <SectionNumber n={3} />
+            Documents
+          </SectionTitle>
           <FileList
             inquiry={inquiry}
             onChange={(files, text) => save({ ...inquiry, files }, text, "file")}
@@ -435,7 +459,10 @@ export function InquiryDetail({ id }: { id: string }) {
 
         {section === "checklist" ? (
         <section className="mt-4 grid gap-3" id="checklist" data-tour="missing">
-          <SectionTitle>Missing information</SectionTitle>
+          <SectionTitle>
+            <SectionNumber n={4} />
+            Missing information
+          </SectionTitle>
           <GapList title="Still needed" empty="Nothing on the needed list." items={needed} onOpen={openGap} />
           <GapList title="Provisional figures" empty="No figure is marked estimated." items={provisional} onOpen={openGap} />
           <GapList title="Additional info (optional)" empty="Nothing else is flagged." items={later} onOpen={openGap} />
@@ -480,7 +507,10 @@ export function InquiryDetail({ id }: { id: string }) {
 
         {section === "quote" ? (
         <section className="mt-4 grid gap-3" id="quote" data-tour="quote">
-          <SectionTitle>Quote</SectionTitle>
+          <SectionTitle>
+            <SectionNumber n={5} />
+            Quote
+          </SectionTitle>
           <QuoteBuilder
             key={inquiry.id}
             inquiry={inquiry}
@@ -491,7 +521,10 @@ export function InquiryDetail({ id }: { id: string }) {
 
         {section === "activity" ? (
         <section className="mt-4 grid gap-3" id="activity" data-tour="activity">
-          <SectionTitle>Activity</SectionTitle>
+          <SectionTitle>
+            <SectionNumber n={6} />
+            Activity
+          </SectionTitle>
           <LogUpdate key={`${focusKind}-${logKey}`} inquiry={inquiry} initialKind={focusKind} />
           <form
             className="grid max-w-xl gap-2"
@@ -734,6 +767,14 @@ export function InquiryDetail({ id }: { id: string }) {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+function SectionNumber({ n }: { n: number }) {
+  return (
+    <span className="mr-2 inline-flex size-6 items-center justify-center border border-zinc-950 bg-zinc-950 align-middle text-[12px] font-medium text-white">
+      {n}
+    </span>
   );
 }
 
