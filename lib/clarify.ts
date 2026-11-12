@@ -1,7 +1,9 @@
-import { formatCbm, formatKg, formatM, formatTons } from "./format";
+import { formatCbm, formatKg, formatM, formatMoney, formatTons } from "./format";
 import { missingItems, type CargoFacts } from "./missing";
+import { modeLabel } from "./labels";
+import { quoteTotals } from "./quote";
 import { formatDay } from "./time";
-import type { Inquiry } from "./types";
+import type { Inquiry, QuoteVersion } from "./types";
 
 export function clarificationDraft(inquiry: Inquiry): string {
   const facts: CargoFacts = {
@@ -48,6 +50,40 @@ Route: ${inquiry.origin.city || "origin"} to ${inquiry.destination.city || "dest
 Packed dimensions, per piece, are what we will pass on. If a figure is still estimated, please say so. We will not treat an estimate as a weighbridge weight.
 
 This note was drafted in Project Cargo Desk and was not emailed.
+
+${inquiry.reference}`;
+}
+
+/** Copyable cover email for sending a quote. Sell price only — no margin. */
+export function quoteSendDraft(inquiry: Inquiry, quote: QuoteVersion): string {
+  const totals = quoteTotals(quote);
+  const lines = quote.lines
+    .filter((line) => line.description.trim() || line.amount > 0)
+    .map((line) => `- ${line.description || "Line"}: ${formatMoney(line.amount, quote.currency)}`)
+    .join("\n");
+
+  return `To: ${inquiry.email || "(no email)"}
+Subject: ${inquiry.reference} — ${quote.kind} quotation v${quote.version} for ${inquiry.projectName}
+
+Good day${inquiry.contactName ? ` ${inquiry.contactName}` : ""},
+
+Please find our ${quote.kind} quotation for ${inquiry.projectName}.
+
+Reference: ${inquiry.reference}
+Version: v${quote.version} (${quote.kind})
+Incoterm: ${inquiry.incoterm || "not set"}
+Mode: ${modeLabel(inquiry.mode)}
+Route: ${inquiry.origin.city || "origin"} → ${inquiry.destination.city || "destination"}
+Cargo-ready: ${formatDay(inquiry.cargoReady)}
+Valid until: ${formatDay(quote.validityDate) || "to be confirmed"}
+
+Total: ${formatMoney(totals.sell, quote.currency)}
+
+${lines ? `Particulars:\n${lines}\n` : ""}
+${quote.inclusions.trim() ? `Inclusions:\n${quote.inclusions.trim()}\n` : ""}
+${quote.exclusions.trim() ? `Exclusions:\n${quote.exclusions.trim()}\n` : ""}
+${quote.subjectTo.trim() ? `Subject to:\n${quote.subjectTo.trim()}\n` : ""}
+This is a demo draft from Project Cargo Desk. Sample figures only. Nothing was emailed from the desk.
 
 ${inquiry.reference}`;
 }

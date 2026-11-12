@@ -32,6 +32,7 @@ export const INQUIRY_SECTIONS: { id: InquirySectionId; number: number; label: st
 
 export function fieldSelector(gapId: string): string {
   if (gapId.startsWith("est-")) return `#field-source-${gapId.slice(4)}`;
+  if (gapId.startsWith("dims-")) return `#field-dims-${gapId.slice(5)}`;
   return `#field-${gapId}`;
 }
 
@@ -42,7 +43,8 @@ export function sectionForGap(gapId: string): InquirySectionId {
     gapId.startsWith("pack-") ||
     gapId.startsWith("source-") ||
     gapId.startsWith("est-") ||
-    gapId.startsWith("rev-")
+    gapId.startsWith("rev-") ||
+    gapId.startsWith("dims-")
   ) {
     return "pieces";
   }

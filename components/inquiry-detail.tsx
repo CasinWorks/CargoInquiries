@@ -874,7 +874,7 @@ function PieceExtrasEditor({
   return (
     <div className="grid gap-3">
       <p className="text-[12px] text-zinc-500">
-        Fill packing, data source, centre of gravity, and lifting points here. CoG and lifting points are optional extras.
+        Edit sizes here if the call only had part of the figure. Then fill packing and data source. CoG and lifting points are optional extras.
       </p>
       {pieces.map((piece) => (
         <div key={piece.id} className="grid gap-2 border border-zinc-200 bg-white p-3">
@@ -882,6 +882,96 @@ function PieceExtrasEditor({
             {piece.id}
             <span className="ml-2 font-sans text-zinc-800">{piece.description || "Untitled piece"}</span>
           </p>
+          <div id={`field-dims-${piece.id}`} className="grid gap-2 sm:grid-cols-5">
+            <label className="grid gap-1 text-[12px] text-zinc-600 sm:col-span-5">
+              Description
+              <DeskInput
+                aria-label={`${piece.id} description`}
+                value={piece.description}
+                onChange={(event) => patch(piece.id, { description: event.target.value }, `${piece.id} description updated.`)}
+              />
+            </label>
+            <label className="grid gap-1 text-[12px] text-zinc-600">
+              Qty
+              <DeskInput
+                inputMode="numeric"
+                aria-label={`${piece.id} quantity`}
+                value={String(piece.qty)}
+                onChange={(event) => {
+                  const qty = Math.max(1, Math.floor(Number(event.target.value)) || 1);
+                  patch(piece.id, { qty }, `${piece.id} quantity updated.`);
+                }}
+              />
+            </label>
+            <label className="grid gap-1 text-[12px] text-zinc-600">
+              L m
+              <DeskInput
+                inputMode="decimal"
+                aria-label={`${piece.id} length metres`}
+                value={piece.lengthM > 0 ? String(piece.lengthM) : ""}
+                placeholder="—"
+                onChange={(event) => {
+                  const lengthM = Number(event.target.value);
+                  patch(
+                    piece.id,
+                    { lengthM: Number.isFinite(lengthM) && lengthM > 0 ? lengthM : 0 },
+                    `${piece.id} length updated.`,
+                  );
+                }}
+              />
+            </label>
+            <label className="grid gap-1 text-[12px] text-zinc-600">
+              W m
+              <DeskInput
+                inputMode="decimal"
+                aria-label={`${piece.id} width metres`}
+                value={piece.widthM > 0 ? String(piece.widthM) : ""}
+                placeholder="—"
+                onChange={(event) => {
+                  const widthM = Number(event.target.value);
+                  patch(
+                    piece.id,
+                    { widthM: Number.isFinite(widthM) && widthM > 0 ? widthM : 0 },
+                    `${piece.id} width updated.`,
+                  );
+                }}
+              />
+            </label>
+            <label className="grid gap-1 text-[12px] text-zinc-600">
+              H m
+              <DeskInput
+                inputMode="decimal"
+                aria-label={`${piece.id} height metres`}
+                value={piece.heightM > 0 ? String(piece.heightM) : ""}
+                placeholder="—"
+                onChange={(event) => {
+                  const heightM = Number(event.target.value);
+                  patch(
+                    piece.id,
+                    { heightM: Number.isFinite(heightM) && heightM > 0 ? heightM : 0 },
+                    `${piece.id} height updated.`,
+                  );
+                }}
+              />
+            </label>
+            <label className="grid gap-1 text-[12px] text-zinc-600">
+              kg each
+              <DeskInput
+                inputMode="decimal"
+                aria-label={`${piece.id} weight kg`}
+                value={piece.weightKg > 0 ? String(piece.weightKg) : ""}
+                placeholder="—"
+                onChange={(event) => {
+                  const weightKg = Number(event.target.value);
+                  patch(
+                    piece.id,
+                    { weightKg: Number.isFinite(weightKg) && weightKg > 0 ? weightKg : 0 },
+                    `${piece.id} weight updated.`,
+                  );
+                }}
+              />
+            </label>
+          </div>
           <div className="grid gap-2 md:grid-cols-2">
             <label id={`field-pack-${piece.id}`} className="grid gap-1 text-[12px] text-zinc-600">
               Packing

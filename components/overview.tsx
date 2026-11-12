@@ -5,6 +5,7 @@ import { staffName } from "@/lib/labels";
 import { inquiryTodos } from "@/lib/todos";
 import { PageTitle, SampleMark } from "@/components/bits";
 import { Tip } from "@/components/shell";
+import { downloadInquiriesCsv } from "@/lib/export-csv";
 import { statusLabel, STATUSES } from "@/lib/labels";
 import { deskStats } from "@/lib/stats";
 import { useDesk } from "@/lib/store";
@@ -20,10 +21,17 @@ export function Overview() {
       <PageTitle kicker="Team desk" title="Overview">
         Counts come from the inquiries saved in this browser. Sample jobs are marked SAMPLE. They are not Interfreight’s book of business.
       </PageTitle>
-      <p className="mb-4">
+      <p className="mb-4 flex flex-wrap gap-3">
         <Link href="/inquiries/new" data-tour="new-from-call" className="inline-flex min-h-11 items-center bg-zinc-950 px-4 text-[16px] text-white">
           New inquiry from email or call
         </Link>
+        <button
+          type="button"
+          className="inline-flex min-h-11 items-center border border-zinc-300 bg-white px-4 text-[16px] text-zinc-900"
+          onClick={() => downloadInquiriesCsv(desk.inquiries)}
+        >
+          Export CSV
+        </button>
       </p>
       <Tip id="overview">
         You are on the team desk. Use Search in the top bar for a reference, company, or city. Open a sample, then use View as Customer to send one yourself. Nothing is emailed.

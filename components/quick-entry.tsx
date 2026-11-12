@@ -33,29 +33,37 @@ export function QuickEntry() {
     }
     const savedPieces: Piece[] = [];
     pieces.forEach((piece, index) => {
-      if (!piece.description.trim() && !piece.weightKg && !piece.lengthM) return;
+      const hasAny =
+        piece.description.trim() ||
+        piece.weightKg.trim() ||
+        piece.lengthM.trim() ||
+        piece.widthM.trim() ||
+        piece.heightM.trim();
+      if (!hasAny) return;
       const lengthM = Number(piece.lengthM);
       const widthM = Number(piece.widthM);
       const heightM = Number(piece.heightM);
       const weightKg = Number(piece.weightKg);
-      const qty = Number(piece.qty || "1");
-      const complete = [lengthM, widthM, heightM, weightKg, qty].every((n) => Number.isFinite(n) && n > 0);
-      if (!complete) return;
+      const qtyRaw = Number(piece.qty || "1");
+      const qty = Number.isFinite(qtyRaw) && qtyRaw > 0 ? Math.floor(qtyRaw) : 1;
+      const dim = (n: number) => (Number.isFinite(n) && n > 0 ? n : 0);
+      const complete =
+        dim(lengthM) > 0 && dim(widthM) > 0 && dim(heightM) > 0 && dim(weightKg) > 0;
       savedPieces.push({
         id: `P-${String(index + 1).padStart(2, "0")}`,
-        description: piece.description.trim() || "Piece",
+        description: piece.description.trim() || "Piece (provisional)",
         qty,
-        lengthM,
-        widthM,
-        heightM,
-        weightKg,
+        lengthM: dim(lengthM),
+        widthM: dim(widthM),
+        heightM: dim(heightM),
+        weightKg: dim(weightKg),
         packing: "",
         stackable: "unknown",
         cogKnown: "unknown",
         cogNote: "",
         liftingKnown: "unknown",
         liftingNote: "",
-        dataSource: "",
+        dataSource: complete ? "" : "estimated",
         revisionDate: "",
       });
     });
@@ -137,6 +145,9 @@ export function QuickEntry() {
         </label>
         <div className="grid gap-3">
           <p className="text-[16px] font-medium">Pieces, if you already know them</p>
+          <p className="text-[13px] text-zinc-600">
+            Partial rows are kept as provisional. Missing length, width, height, or weight stays on the checklist.
+          </p>
           {pieces.map((piece, index) => (
             <div key={index} className="grid gap-2 border border-zinc-200 p-3 sm:grid-cols-3">
               <DeskInput className="h-11 sm:col-span-3" aria-label={`Piece ${index + 1} description`} placeholder="Description" value={piece.description} onChange={(event) => setPieces((rows) => rows.map((row, i) => (i === index ? { ...row, description: event.target.value } : row)))} />

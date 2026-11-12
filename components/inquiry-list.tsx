@@ -12,6 +12,7 @@ import { shipmentTotals } from "@/lib/calc";
 import { formatFixed } from "@/lib/format";
 import { INCOTERMS, isClosed, MODES, modeLabel, statusLabel, STATUSES } from "@/lib/labels";
 import { factsFromInquiry, neededGaps } from "@/lib/missing";
+import { downloadInquiriesCsv } from "@/lib/export-csv";
 import { matchesQuery } from "@/lib/stats";
 import { useDesk } from "@/lib/store";
 import { formatDay } from "@/lib/time";
@@ -123,9 +124,20 @@ export function InquiryList() {
           Still missing info
         </label>
       </div>
-      <p className="mt-3 text-[12px] text-zinc-500">
-        {rows.length} {rows.length === 1 ? "inquiry" : "inquiries"}
-        {q.trim() ? ` matching “${q.trim()}”` : ""}
+      <p className="mt-3 flex flex-wrap items-center gap-3 text-[12px] text-zinc-500">
+        <span>
+          {rows.length} {rows.length === 1 ? "inquiry" : "inquiries"}
+          {q.trim() ? ` matching “${q.trim()}”` : ""}
+        </span>
+        {rows.length > 0 ? (
+          <button
+            type="button"
+            className="text-[#1e3a5f] underline"
+            onClick={() => downloadInquiriesCsv(rows, "project-cargo-desk-inquiries.csv")}
+          >
+            Export CSV
+          </button>
+        ) : null}
       </p>
       <p className="mt-1 text-[12px] text-zinc-500 lg:hidden">Scroll sideways for lane, ready date, and freight tons.</p>
       {rows.length === 0 ? (
