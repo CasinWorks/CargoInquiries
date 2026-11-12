@@ -11,7 +11,9 @@ import {
 } from "@/components/ui/dialog";
 import { DeskInput, DeskSelect, DeskText } from "@/components/bits";
 import { shipmentTotals } from "@/lib/calc";
+import { quoteSendDraft } from "@/lib/clarify";
 import { formatFixed, formatMoney } from "@/lib/format";
+import { incotermScopeNote, suggestedLinesForIncoterm } from "@/lib/incoterm-layers";
 import { INDICATIVE, LAYERS, LINE_STATUSES, SAMPLE_FIGURES, layerLabel, lineStatusLabel, modeLabel, statusLabel } from "@/lib/labels";
 import { factsFromInquiry, neededGaps } from "@/lib/missing";
 import { blankLine, blankQuote, diffQuotes, quoteReadyToSend, quoteTotals } from "@/lib/quote";
@@ -31,6 +33,8 @@ export function QuoteBuilder({
   const [signOpen, setSignOpen] = useState(false);
   const [signNote, setSignNote] = useState("Cleared to send, subject to the written conditions.");
   const [block, setBlock] = useState("");
+  const [sendOpen, setSendOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   function patchQuote(quoteId: string, updater: (quote: QuoteVersion) => QuoteVersion, extra?: Partial<Inquiry>) {
     onChange({
@@ -156,6 +160,34 @@ export function QuoteBuilder({
           {needed.length} checklist items are still open. A firm offer with open items should say so in the subject-to clause.
         </p>
       ) : null}
+      <div className="border border-zinc-200 bg-white p-3">
+        <p className="text-[13px] font-medium text-zinc-950">
+          Incoterm template{inquiry.incoterm ? ` · ${inquiry.incoterm}` : ""}
+        </p>
+        <p className="mt-1 text-[12px] leading-snug text-zinc-600">{incotermScopeNote(inquiry.incoterm)}</p>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="mt-2"
+          onClick={() => {
+            const suggestions = suggestedLinesForIncoterm(inquiry.incoterm);
+            const existing = new Set(
+              selected.lines.map((line) => `${line.layer}::${line.description.trim().toLowerCase()}`),
+            );
+            const additions = suggestions
+              .filter((item) => !existing.has(`${item.layer}::${item.description.trim().toLowerCase()}`))
+              .map((item) => ({ ...blankLine(item.layer), description: item.description }));
+            if (additions.length === 0) return;
+            setLines([...selected.lines, ...additions]);
+          }}
+        >
+          Add suggested lines{inquiry.incoterm ? ` for ${inquiry.incoterm}` : ""}
+        </Button>
+        <p className="mt-2 text-[12px] text-zinc-500">
+          Adds empty amount lines for the usual seller-side legs. Edit or remove anything that is out of scope. Does not set prices.
+        </p>
+      </div>
       {LAYERS.map((layer) => (
         <LayerBlock
           key={layer.id}
@@ -373,15 +405,27 @@ export function QuoteBuilder({
         ) : null}
         <p className="mt-3 text-[12px] whitespace-pre-wrap text-zinc-600">{selected.subjectTo}</p>
         <p className="no-print mt-3 text-[12px] text-zinc-500">
-          Downloads a PDF of this quote only — not the desk page. Nothing is emailed.
+          Customer PDF shows particulars and the sell total only — no contingency, risk, or margin. Nothing is emailed from the desk.
         </p>
-        <button
-          type="button"
-          className="no-print mt-2 text-[12px] text-[#1e3a5f] underline"
-          onClick={() => downloadQuotePdf(inquiry, selected)}
-        >
-          Download quote PDF
-        </button>
+        <div className="no-print mt-2 flex flex-wrap gap-3">
+          <button
+            type="button"
+            className="text-[12px] text-[#1e3a5f] underline"
+            onClick={() => downloadQuotePdf(inquiry, selected)}
+          >
+            Download quote PDF
+          </button>
+          <button
+            type="button"
+            className="text-[12px] text-[#1e3a5f] underline"
+            onClick={() => {
+              setCopied(false);
+              setSendOpen(true);
+            }}
+          >
+            Draft send email
+          </button>
+        </div>
       </article>
       <details className="text-[12px] leading-relaxed text-zinc-600">
         <summary className="cursor-pointer text-[13px] text-zinc-800">Published tariff reference, not used in the total</summary>
@@ -425,6 +469,37 @@ export function QuoteBuilder({
               }}
             >
               Record
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={sendOpen} onOpenChange={setSendOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Draft send email</DialogTitle>
+          </DialogHeader>
+          <p className="text-[12px] text-zinc-600">
+            Cover text for your own mail client. Sell total only — no margin. Nothing is emailed from this desk.
+          </p>
+          <DeskText
+            readOnly
+            className="min-h-64 font-mono text-[12px]"
+            value={quoteSendDraft(inquiry, selected)}
+            aria-label="Quote send draft"
+          />
+          <DialogFooter>
+            <Button type="button" variant="outline" size="sm" onClick={() => setSendOpen(false)}>
+              Close
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={async () => {
+                await navigator.clipboard.writeText(quoteSendDraft(inquiry, selected));
+                setCopied(true);
+              }}
+            >
+              {copied ? "Copied" : "Copy draft"}
             </Button>
           </DialogFooter>
         </DialogContent>

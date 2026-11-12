@@ -63,13 +63,14 @@ export const SECTION_TUTORIALS: Record<InquirySectionId, SectionTutorial> = {
     id: "quote",
     number: 5,
     title: "Quote",
-    why: "Type cost lines by hand, get sign-off, then download a PDF of this quote only.",
+    why: "Type cost lines by hand, get sign-off, then send a customer PDF and email draft — margin stays internal.",
     steps: [
+      "Use Add suggested lines for the Incoterm if you want a starter list of legs.",
       "Add or edit cost lines under each layer (truck, port, ocean, and so on).",
       "Check inclusions, exclusions, and the subject-to text.",
       "Record manager sign-off when the offer is ready.",
       "Mark sent after it goes out (this desk does not email it).",
-      "Use Download quote PDF for a clean quotation file — not the whole page.",
+      "Download quote PDF (sell total only) or copy the Draft send email for your mail client.",
     ],
   },
   activity: {

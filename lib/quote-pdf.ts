@@ -1,7 +1,7 @@
 import { jsPDF } from "jspdf";
 import { shipmentTotals } from "./calc";
 import { formatFixed, formatMoney } from "./format";
-import { INDICATIVE, layerLabel, modeLabel } from "./labels";
+import { INDICATIVE, modeLabel } from "./labels";
 import { quoteTotals } from "./quote";
 import { formatDay } from "./time";
 import type { Inquiry, QuoteVersion } from "./types";
@@ -18,6 +18,7 @@ function ensureSpace(doc: jsPDF, y: number, need: number, bottom = 280): number 
   return 20;
 }
 
+/** Customer-facing PDF: sell price and line descriptions only. No margin or cost build-up. */
 export function downloadQuotePdf(inquiry: Inquiry, quote: QuoteVersion) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -31,7 +32,7 @@ export function downloadQuotePdf(inquiry: Inquiry, quote: QuoteVersion) {
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
-  doc.text("Project Cargo Desk — Quotation", margin, y);
+  doc.text("Quotation", margin, y);
   y += 6;
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
@@ -73,7 +74,7 @@ export function downloadQuotePdf(inquiry: Inquiry, quote: QuoteVersion) {
     y = ensureSpace(doc, y, 16);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    doc.text("Cost lines", margin, y);
+    doc.text("Particulars", margin, y);
     y += 5;
 
     doc.setFontSize(8);
@@ -81,7 +82,6 @@ export function downloadQuotePdf(inquiry: Inquiry, quote: QuoteVersion) {
     doc.line(margin, y, margin + width, y);
     y += 4;
     doc.text("Description", margin, y);
-    doc.text("Layer", margin + width * 0.55, y);
     doc.text("Amount", margin + width, y, { align: "right" });
     y += 2;
     doc.line(margin, y, margin + width, y);
@@ -89,34 +89,23 @@ export function downloadQuotePdf(inquiry: Inquiry, quote: QuoteVersion) {
 
     doc.setFont("helvetica", "normal");
     for (const line of lines) {
-      const descLines = doc.splitTextToSize(line.description || "—", width * 0.52) as string[];
+      const descLines = doc.splitTextToSize(line.description || "—", width * 0.72) as string[];
       const rowHeight = Math.max(descLines.length * 4, 5) + 2;
       y = ensureSpace(doc, y, rowHeight + 2);
       doc.text(descLines, margin, y);
-      doc.text(layerLabel(line.layer), margin + width * 0.55, y);
       doc.text(formatMoney(line.amount, quote.currency), margin + width, y, { align: "right" });
       y += rowHeight;
     }
     y += 2;
   }
 
-  y = ensureSpace(doc, y, 28);
+  y = ensureSpace(doc, y, 16);
   doc.setDrawColor(180);
   doc.line(margin, y, margin + width, y);
-  y += 6;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.text(`Subtotal ${formatMoney(totals.subtotal, quote.currency)}`, margin + width, y, { align: "right" });
-  y += 5;
-  doc.text(`Contingency ${formatMoney(totals.contingency, quote.currency)}`, margin + width, y, { align: "right" });
-  y += 5;
-  doc.text(`Risk allowance ${formatMoney(quote.riskAllowance || 0, quote.currency)}`, margin + width, y, { align: "right" });
-  y += 5;
-  doc.text(`Margin ${formatMoney(totals.margin, quote.currency)}`, margin + width, y, { align: "right" });
-  y += 7;
+  y += 8;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
-  doc.text(`Sell price ${formatMoney(totals.sell, quote.currency)}`, margin + width, y, { align: "right" });
+  doc.text(`Total ${formatMoney(totals.sell, quote.currency)}`, margin + width, y, { align: "right" });
   y += 8;
 
   doc.setFont("helvetica", "normal");
@@ -162,7 +151,7 @@ export function downloadQuotePdf(inquiry: Inquiry, quote: QuoteVersion) {
   doc.setTextColor(110);
   wrap(
     doc,
-    "Prepared in Project Cargo Desk (demo). Saved as a PDF in this browser. Nothing was emailed or filed.",
+    "Prepared in Project Cargo Desk (demo). Saved as a PDF in this browser. Nothing was emailed or filed. Internal margin is not shown on this customer copy.",
     margin,
     y,
     width,

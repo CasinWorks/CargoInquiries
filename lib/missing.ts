@@ -90,6 +90,14 @@ export function missingItems(facts: CargoFacts): Gap[] {
   }
 
   for (const piece of facts.pieces) {
+    if (piece.lengthM <= 0 || piece.widthM <= 0 || piece.heightM <= 0 || piece.weightKg <= 0) {
+      gaps.push({
+        id: `dims-${piece.id}`,
+        severity: "needed",
+        label: `${piece.id} dimensions or weight`,
+        detail: `${piece.description || piece.id} was saved with incomplete size or weight. Fill L × W × H (m) and kg before treating figures as firm.`,
+      });
+    }
     if (!piece.dataSource) {
       gaps.push({
         id: `source-${piece.id}`,
