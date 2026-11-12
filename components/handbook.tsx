@@ -210,16 +210,6 @@ export function Handbook() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  function present() {
-    const node = deck.current;
-    if (!node) return;
-    if (document.fullscreenElement) {
-      void document.exitFullscreen();
-      return;
-    }
-    void node.requestFullscreen();
-  }
-
   const Body = slide.body;
 
   return (
@@ -231,9 +221,6 @@ export function Handbook() {
         <div className="flex gap-2">
           <button type="button" className="min-h-11 border border-zinc-300 bg-white px-3 text-[16px]" onClick={() => setWords((value) => !value)} aria-expanded={words}>
             Words to know
-          </button>
-          <button type="button" className="min-h-11 border border-zinc-300 bg-white px-3 text-[16px]" onClick={present}>
-            Present
           </button>
         </div>
       </div>
@@ -290,7 +277,7 @@ export function Handbook() {
           ))}
         </div>
       </div>
-      <p className="mt-2 text-[14px] text-zinc-500">Arrow keys move between slides. Present fills the screen.</p>
+      <p className="mt-2 text-[14px] text-zinc-500">Arrow keys move between slides.</p>
     </article>
   );
 }
