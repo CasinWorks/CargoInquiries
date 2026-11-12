@@ -151,6 +151,27 @@
   animation: desk-field-flash 0.55s ease 3;
 }
 
+@keyframes desk-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .desk-field-flash {
+    animation: none !important;
+  }
+
+  * {
+    scroll-behavior: auto !important;
+  }
+}
+
 @media print {
   .no-print {
     display: none !important;

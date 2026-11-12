@@ -126,13 +126,17 @@ export function TourRoot({ mode, children }: { mode: TourSide; children: ReactNo
     }
   }, [mode, pathname, side]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!step) return;
-    if (step.route && pathname !== step.route) router.push(step.route);
+    window.dispatchEvent(new CustomEvent("pcd-inquiry-section", { detail: step.target }));
     if (step.wizardStep != null) {
       window.dispatchEvent(new CustomEvent("pcd-wizard-step", { detail: step.wizardStep }));
     }
-    window.dispatchEvent(new CustomEvent("pcd-inquiry-section", { detail: step.target }));
+  }, [step]);
+
+  useEffect(() => {
+    if (!step) return;
+    if (step.route && pathname !== step.route) router.push(step.route);
   }, [step, pathname, router]);
 
   function dismissWelcome() {
@@ -378,13 +382,14 @@ function Spotlight({
 
   useLayoutEffect(() => {
     let stop = false;
-    let found = false;
-    function place() {
+    let scrolled = false;
+    let lastBox = "";
+    function place(allowScroll: boolean) {
       if (stop) return;
       const hole = holeRef.current;
       const card = cardRef.current;
       if (!hole || !card) return;
-      const target = document.querySelector(`[data-tour="${step.target}"]`);
+      const target = document.querySelector(`[data-tour="${step.target}"]`) as HTMLElement | null;
       const cardRect = card.getBoundingClientRect();
       const mobile = window.innerWidth < 700;
       if (!target) {
@@ -393,21 +398,40 @@ function Spotlight({
         card.style.left = "16px";
         card.style.right = "16px";
         card.style.width = "auto";
+        card.style.bottom = "auto";
         return;
       }
-      if (!found) {
-        found = true;
-        target.scrollIntoView({ block: "center", inline: "nearest" });
-        window.requestAnimationFrame(place);
-        return;
+      if (allowScroll && !scrolled) {
+        const rect = target.getBoundingClientRect();
+        const tall = rect.height > window.innerHeight * 0.55;
+        const topPinned = rect.top >= 8 && rect.top <= 100;
+        const fullyVisible = rect.top >= 12 && rect.bottom <= window.innerHeight - 12;
+        if (tall ? !topPinned : !fullyVisible) {
+          scrolled = true;
+          // Long sections (quote, pieces): pin the top into view first.
+          target.scrollIntoView({ block: tall ? "start" : "nearest", inline: "nearest", behavior: "smooth" });
+          window.setTimeout(() => place(false), 280);
+          return;
+        }
+        scrolled = true;
       }
       const rect = target.getBoundingClientRect();
       const pad = 6;
+      const tall = rect.height > window.innerHeight * 0.55;
+      // For long forms, only frame the visible top portion — not the whole height.
+      const maxHoleHeight = Math.max(160, window.innerHeight - Math.max(4, rect.top - pad) - (mobile ? 200 : 24));
+      const holeTop = Math.max(4, rect.top - pad);
+      const holeLeft = Math.max(4, rect.left - pad);
+      const holeWidth = Math.min(window.innerWidth - 8, rect.width + pad * 2);
+      const holeHeight = tall ? Math.min(rect.height + pad * 2, maxHoleHeight) : rect.height + pad * 2;
+      const box = `${Math.round(holeTop)}:${Math.round(holeLeft)}:${Math.round(holeWidth)}:${Math.round(holeHeight)}:${mobile ? 1 : 0}`;
+      if (box === lastBox) return;
+      lastBox = box;
       hole.style.display = "block";
-      hole.style.top = `${Math.max(4, rect.top - pad)}px`;
-      hole.style.left = `${Math.max(4, rect.left - pad)}px`;
-      hole.style.width = `${Math.min(window.innerWidth - 8, rect.width + pad * 2)}px`;
-      hole.style.height = `${rect.height + pad * 2}px`;
+      hole.style.top = `${holeTop}px`;
+      hole.style.left = `${holeLeft}px`;
+      hole.style.width = `${holeWidth}px`;
+      hole.style.height = `${holeHeight}px`;
       if (mobile) {
         card.style.top = "auto";
         card.style.bottom = "12px";
@@ -419,24 +443,46 @@ function Spotlight({
       card.style.bottom = "auto";
       card.style.right = "auto";
       card.style.width = "380px";
-      let top = rect.bottom + 12;
-      if (top + cardRect.height > window.innerHeight - 12) top = Math.max(12, rect.top - cardRect.height - 12);
-      let left = rect.left;
-      if (left + 380 > window.innerWidth - 12) left = window.innerWidth - 380 - 12;
+      // Prefer the card beside / under the visible top of a long section.
+      let top = tall ? Math.min(holeTop + 16, window.innerHeight - cardRect.height - 12) : holeTop + holeHeight + 12;
+      if (!tall && top + cardRect.height > window.innerHeight - 12) {
+        top = Math.max(12, holeTop - cardRect.height - 12);
+      }
+      let left = holeLeft;
+      if (tall) {
+        left = Math.min(holeLeft + holeWidth - 380, window.innerWidth - 392);
+        left = Math.max(12, left);
+      } else if (left + 380 > window.innerWidth - 12) {
+        left = window.innerWidth - 380 - 12;
+      }
       card.style.top = `${Math.max(12, top)}px`;
       card.style.left = `${Math.max(12, left)}px`;
     }
-    place();
-    const timer = window.setInterval(place, 250);
-    window.addEventListener("resize", place);
-    window.addEventListener("scroll", place, true);
+    place(true);
+    // Retry briefly so section tabs can mount (pieces, checklist, quote, activity).
+    let tries = 0;
+    const retry = window.setInterval(() => {
+      tries += 1;
+      place(tries <= 2);
+      if (tries >= 12) window.clearInterval(retry);
+    }, 80);
+    function onResize() {
+      place(false);
+    }
+    function onScroll() {
+      place(false);
+    }
+    const settle = window.setInterval(onResize, 400);
+    window.addEventListener("resize", onResize);
+    window.addEventListener("scroll", onScroll, true);
     const focusTimer = window.setTimeout(() => nextRef.current?.focus(), 350);
     return () => {
       stop = true;
-      window.clearInterval(timer);
+      window.clearInterval(retry);
+      window.clearInterval(settle);
       window.clearTimeout(focusTimer);
-      window.removeEventListener("resize", place);
-      window.removeEventListener("scroll", place, true);
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("scroll", onScroll, true);
     };
   }, [step, index]);
 
@@ -464,7 +510,7 @@ function Spotlight({
       <div className="fixed inset-0 z-40" />
       <div
         ref={holeRef}
-        className="pointer-events-none fixed z-40 border-2 border-zinc-950"
+        className="pointer-events-none fixed z-40 border-2 border-zinc-950 transition-[top,left,width,height] duration-300 ease-out motion-reduce:transition-none"
         style={{ boxShadow: "0 0 0 9999px rgba(24, 24, 27, 0.55)" }}
       />
       <div
@@ -472,15 +518,24 @@ function Spotlight({
         role="dialog"
         aria-modal="true"
         aria-labelledby="tour-title"
-        className="fixed z-50 max-h-[70vh] overflow-auto border border-zinc-300 bg-white p-4"
+        className="fixed z-50 max-h-[70vh] overflow-auto border border-zinc-300 bg-white p-4 transition-[top,left,bottom,right,width] duration-300 ease-out motion-reduce:transition-none"
       >
         <p className="text-[14px] text-zinc-600">
           {index + 1} of {total}
         </p>
-        <h2 id="tour-title" className="mt-1 text-[18px] leading-snug font-medium text-zinc-950">
+        <h2
+          key={`title-${index}`}
+          id="tour-title"
+          className="mt-1 animate-[desk-fade-in_280ms_ease-out] text-[18px] leading-snug font-medium text-zinc-950 motion-reduce:animate-none"
+        >
           {step.title}
         </h2>
-        <p className="mt-2 text-[16px] leading-relaxed text-zinc-800">{step.body}</p>
+        <p
+          key={`body-${index}`}
+          className="mt-2 animate-[desk-fade-in_320ms_ease-out] text-[16px] leading-relaxed text-zinc-800 motion-reduce:animate-none"
+        >
+          {step.body}
+        </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <button
             type="button"

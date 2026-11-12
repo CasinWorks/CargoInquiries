@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -51,6 +51,7 @@ import {
   type InquirySectionId,
   type TodoItem,
 } from "@/lib/todos";
+import { TEAM_TOUR } from "@/lib/tour-steps";
 import { formatDay, formatWhen, nowIso, uid } from "@/lib/time";
 import type { CargoFile, DataSource, Inquiry, Incoterm, Packing, Piece, Status, Tri } from "@/lib/types";
 
@@ -69,13 +70,26 @@ export function InquiryDetail({ id }: { id: string }) {
   const [logKey, setLogKey] = useState(0);
   const [section, setSection] = useState<InquirySectionId>("summary");
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     function onTourSection(event: Event) {
       const target = (event as CustomEvent<string>).detail;
       const next = sectionForTourTarget(target);
       if (next) setSection(next);
     }
     window.addEventListener("pcd-inquiry-section", onTourSection);
+    try {
+      const raw = sessionStorage.getItem("pcd-tour-active-v1");
+      if (raw) {
+        const active = JSON.parse(raw) as { side?: string; index?: number };
+        if (active.side === "team" && typeof active.index === "number") {
+          const step = TEAM_TOUR[active.index];
+          const next = step ? sectionForTourTarget(step.target) : null;
+          if (next) setSection(next);
+        }
+      }
+    } catch {
+      /* ignore */
+    }
     return () => window.removeEventListener("pcd-inquiry-section", onTourSection);
   }, []);
 
