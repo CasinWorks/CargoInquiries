@@ -36,7 +36,7 @@ export function CustomerInquiry({ id }: { id: string }) {
       <h1 className="text-[20px] font-medium text-zinc-950">{received ? "Inquiry received" : inquiry.projectName}</h1>
       {received ? (
         <p className="max-w-2xl text-[13px] leading-relaxed text-zinc-700">
-          Reference {inquiry.reference}. Someone on the desk will read the piece list and write back if a drawing, a weight ticket, or a lifting point is still missing. This reference is stored in this browser only. Nothing was emailed.
+          Reference {inquiry.reference}. Someone on the desk will read the piece list and write back if required details are still open. A drawing or lifting note may be asked for later as useful extras. This reference is stored in this browser only. Nothing was emailed.
         </p>
       ) : (
         <p className="text-[13px] text-zinc-600">{inquiry.projectName}</p>

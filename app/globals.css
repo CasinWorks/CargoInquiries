@@ -132,6 +132,25 @@
   }
 }
 
+@keyframes desk-field-flash {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px #18181b;
+    background-color: #fafafa;
+  }
+  50% {
+    box-shadow: 0 0 0 4px #18181b;
+    background-color: #f4f4f5;
+  }
+}
+
+.desk-field-flash {
+  outline: 2px solid #18181b;
+  outline-offset: 3px;
+  border-radius: 2px;
+  animation: desk-field-flash 0.55s ease 3;
+}
+
 @media print {
   .no-print {
     display: none !important;

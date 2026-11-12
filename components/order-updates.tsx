@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { DeskSelect, DeskText } from "@/components/bits";
 import { LOST_REASONS, STAFF, staffName, statusLabel } from "@/lib/labels";
-import { factsFromInquiry, neededGaps } from "@/lib/missing";
+import { factsFromInquiry, missingItems } from "@/lib/missing";
 import { logKindToTimeline, sourceLabel, sourceOf, stageLabelForMove, statusForStage, type LogKind } from "@/lib/order";
 import { useDesk } from "@/lib/store";
 import { nowIso, uid } from "@/lib/time";
@@ -45,7 +45,9 @@ export function LogUpdate({ inquiry, initialKind = "" }: { inquiry: Inquiry; ini
   const [kind, setKind] = useState<LogKind | "">(initialKind);
   const [note, setNote] = useState("");
   const [picked, setPicked] = useState<string[]>([]);
-  const open = neededGaps(factsFromInquiry(inquiry)).filter((gap) => !(inquiry.clearedGaps ?? []).includes(gap.id));
+  const open = missingItems(factsFromInquiry(inquiry)).filter(
+    (gap) => gap.severity !== "provisional" && !(inquiry.clearedGaps ?? []).includes(gap.id),
+  );
 
   function save() {
     if (!kind) return;

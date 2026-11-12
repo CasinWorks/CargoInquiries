@@ -148,7 +148,7 @@ export function Wizard() {
         Step {step + 1} of {STEPS.length}. Packed dimensions, per piece. The desk keeps a missing-item list for anything you leave open.
       </PageTitle>
       <Tip id="wizard">
-        Length, width, and height are packed size, in metres, for one piece. You can leave the centre of gravity blank. It will stay on the checklist.
+        Length, width, and height are packed size, in metres, for one piece. Centre of gravity and lifting points are optional extras — useful later, not required to send.
       </Tip>
       <div className="grid gap-8 lg:grid-cols-[180px_minmax(0,1fr)]">
         <ol className="no-print grid content-start gap-1" data-tour="wizard-steps">
@@ -612,7 +612,7 @@ function FileStep({ draft, patch }: { draft: InquiryDraft; patch: (partial: Part
         />
       </Field>
       {draft.files.length === 0 ? (
-        <p className="text-[13px] text-zinc-600">No file attached yet. You can still send the inquiry. The checklist will say a drawing is missing if a piece looks out of gauge.</p>
+        <p className="text-[13px] text-zinc-600">No file attached yet. You can still send the inquiry. A drawing may show later as useful additional info if a piece looks out of gauge.</p>
       ) : (
         <ul className="divide-y divide-zinc-200 border-y border-zinc-200">
           {draft.files.map((file) => (
