@@ -1,0 +1,345 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { CUSTOMER_TOUR, TEAM_TOUR, type TourSide, type TourStep } from "@/lib/tour-steps";
+
+const OFFER_KEY = "pcd-tour-offer-v1";
+
+type OfferState = { customer?: string; team?: string };
+
+type TourContextValue = {
+  start: (side: TourSide) => void;
+};
+
+const TourContext = createContext<TourContextValue | null>(null);
+
+export function useTour(): TourContextValue {
+  const value = useContext(TourContext);
+  if (!value) throw new Error("useTour must be used inside TourRoot");
+  return value;
+}
+
+function readOffer(): OfferState {
+  try {
+    return JSON.parse(localStorage.getItem(OFFER_KEY) || "{}") as OfferState;
+  } catch {
+    return {};
+  }
+}
+
+function writeOffer(side: TourSide) {
+  const next = { ...readOffer(), [side]: "dismissed" };
+  localStorage.setItem(OFFER_KEY, JSON.stringify(next));
+}
+
+export function TourRoot({ mode, children }: { mode: TourSide; children: ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [side, setSide] = useState<TourSide | null>(null);
+  const [index, setIndex] = useState(0);
+  const [offer, setOffer] = useState(false);
+
+  const steps = side === "customer" ? CUSTOMER_TOUR : side === "team" ? TEAM_TOUR : [];
+  const step = steps[index];
+
+  useEffect(() => {
+    const stored = readOffer();
+    const quiet = pathname.startsWith("/handbook") || pathname.startsWith("/guide");
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is read after mount
+    setOffer(!quiet && !stored[mode]);
+  }, [mode, pathname]);
+
+  useEffect(() => {
+    if (!step) return;
+    if (step.route && pathname !== step.route) router.push(step.route);
+    if (step.wizardStep != null) {
+      window.dispatchEvent(new CustomEvent("pcd-wizard-step", { detail: step.wizardStep }));
+    }
+  }, [step, pathname, router]);
+
+  function begin(next: TourSide) {
+    writeOffer(next);
+    setOffer(false);
+    setIndex(0);
+    setSide(next);
+  }
+
+  function close() {
+    if (side) writeOffer(side);
+    setSide(null);
+    setIndex(0);
+  }
+
+  return (
+    <TourContext.Provider value={{ start: begin }}>
+      {children}
+      {offer && !side ? (
+        <FirstPrompt
+          mode={mode}
+          onTour={() => begin(mode)}
+          onLater={() => {
+            writeOffer(mode);
+            setOffer(false);
+          }}
+        />
+      ) : null}
+      {side && step ? (
+        <Spotlight
+          step={step}
+          index={index}
+          total={steps.length}
+          onBack={() => setIndex((value) => Math.max(0, value - 1))}
+          onNext={() => {
+            if (index >= steps.length - 1) close();
+            else setIndex((value) => value + 1);
+          }}
+          onClose={close}
+        />
+      ) : null}
+    </TourContext.Provider>
+  );
+}
+
+function FirstPrompt({
+  mode,
+  onTour,
+  onLater,
+}: {
+  mode: TourSide;
+  onTour: () => void;
+  onLater: () => void;
+}) {
+  return (
+    <div className="fixed right-3 bottom-3 left-3 z-30 mx-auto max-w-xl border border-zinc-300 bg-white p-4 sm:left-auto">
+      <p className="text-[16px] leading-snug font-medium text-zinc-950">New to this screen?</p>
+      <p className="mt-1 text-[16px] leading-snug text-zinc-700">
+        {mode === "customer"
+          ? "A short tour walks through the form in everyday words. The handbook is a set of large slides, if you would rather read first."
+          : "A short tour walks through the team desk in everyday words. The handbook is a set of large slides, written for someone new to freight."}
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button type="button" className="min-h-11 bg-zinc-950 px-4 text-[16px] text-white" onClick={onTour}>
+          Take the tour
+        </button>
+        <Link href="/handbook" className="inline-flex min-h-11 items-center border border-zinc-300 px-4 text-[16px] text-zinc-950" onClick={onLater}>
+          Open the handbook
+        </Link>
+        <button type="button" className="min-h-11 px-3 text-[16px] text-zinc-700 underline" onClick={onLater}>
+          Not now
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function HelpMenu({ mode }: { mode: TourSide }) {
+  const tour = useTour();
+  const [open, setOpen] = useState(false);
+  const panel = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onPointer(event: MouseEvent) {
+      if (!panel.current?.contains(event.target as Node)) setOpen(false);
+    }
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div className="relative" ref={panel}>
+      <button
+        type="button"
+        className="min-h-9 border border-zinc-300 px-2 text-[13px] text-zinc-950"
+        aria-expanded={open}
+        aria-controls="help-menu"
+        onClick={() => setOpen((value) => !value)}
+      >
+        Help
+      </button>
+      {open ? (
+        <div id="help-menu" role="menu" className="absolute right-0 z-30 mt-1 w-56 border border-zinc-300 bg-white p-1">
+          <button
+            type="button"
+            role="menuitem"
+            className="block w-full px-3 py-2 text-left text-[16px] text-zinc-950 hover:bg-zinc-100"
+            onClick={() => {
+              setOpen(false);
+              tour.start(mode);
+            }}
+          >
+            Take the tour
+          </button>
+          <Link role="menuitem" href="/handbook" className="block px-3 py-2 text-[16px] text-zinc-950 hover:bg-zinc-100" onClick={() => setOpen(false)}>
+            Handbook
+          </Link>
+          <Link role="menuitem" href="/guide" className="block px-3 py-2 text-[16px] text-zinc-950 hover:bg-zinc-100" onClick={() => setOpen(false)}>
+            How to read this
+          </Link>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function Spotlight({
+  step,
+  index,
+  total,
+  onBack,
+  onNext,
+  onClose,
+}: {
+  step: TourStep;
+  index: number;
+  total: number;
+  onBack: () => void;
+  onNext: () => void;
+  onClose: () => void;
+}) {
+  const holeRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const nextRef = useRef<HTMLButtonElement>(null);
+
+  useLayoutEffect(() => {
+    let stop = false;
+    let found = false;
+    function place() {
+      if (stop) return;
+      const hole = holeRef.current;
+      const card = cardRef.current;
+      if (!hole || !card) return;
+      const target = document.querySelector(`[data-tour="${step.target}"]`);
+      const cardRect = card.getBoundingClientRect();
+      const mobile = window.innerWidth < 700;
+      if (!target) {
+        hole.style.display = "none";
+        card.style.top = `${Math.max(16, (window.innerHeight - cardRect.height) / 2)}px`;
+        card.style.left = "16px";
+        card.style.right = "16px";
+        card.style.width = "auto";
+        return;
+      }
+      if (!found) {
+        found = true;
+        target.scrollIntoView({ block: "center", inline: "nearest" });
+        window.requestAnimationFrame(place);
+        return;
+      }
+      const rect = target.getBoundingClientRect();
+      const pad = 6;
+      hole.style.display = "block";
+      hole.style.top = `${Math.max(4, rect.top - pad)}px`;
+      hole.style.left = `${Math.max(4, rect.left - pad)}px`;
+      hole.style.width = `${Math.min(window.innerWidth - 8, rect.width + pad * 2)}px`;
+      hole.style.height = `${rect.height + pad * 2}px`;
+      if (mobile) {
+        card.style.top = "auto";
+        card.style.bottom = "12px";
+        card.style.left = "12px";
+        card.style.right = "12px";
+        card.style.width = "auto";
+        return;
+      }
+      card.style.bottom = "auto";
+      card.style.right = "auto";
+      card.style.width = "380px";
+      let top = rect.bottom + 12;
+      if (top + cardRect.height > window.innerHeight - 12) top = Math.max(12, rect.top - cardRect.height - 12);
+      let left = rect.left;
+      if (left + 380 > window.innerWidth - 12) left = window.innerWidth - 380 - 12;
+      card.style.top = `${Math.max(12, top)}px`;
+      card.style.left = `${Math.max(12, left)}px`;
+    }
+    place();
+    const timer = window.setInterval(place, 250);
+    window.addEventListener("resize", place);
+    window.addEventListener("scroll", place, true);
+    const focusTimer = window.setTimeout(() => nextRef.current?.focus(), 350);
+    return () => {
+      stop = true;
+      window.clearInterval(timer);
+      window.clearTimeout(focusTimer);
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
+    };
+  }, [step, index]);
+
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      const tag = (event.target as HTMLElement | null)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        onNext();
+      } else if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        onBack();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onBack, onClose, onNext]);
+
+  return (
+    <>
+      <div className="fixed inset-0 z-40" />
+      <div
+        ref={holeRef}
+        className="pointer-events-none fixed z-40 border-2 border-zinc-950"
+        style={{ boxShadow: "0 0 0 9999px rgba(24, 24, 27, 0.55)" }}
+      />
+      <div
+        ref={cardRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tour-title"
+        className="fixed z-50 max-h-[70vh] overflow-auto border border-zinc-300 bg-white p-4"
+      >
+        <p className="text-[14px] text-zinc-600">
+          {index + 1} of {total}
+        </p>
+        <h2 id="tour-title" className="mt-1 text-[18px] leading-snug font-medium text-zinc-950">
+          {step.title}
+        </h2>
+        <p className="mt-2 text-[16px] leading-relaxed text-zinc-800">{step.body}</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="min-h-11 border border-zinc-300 px-4 text-[16px] text-zinc-950 disabled:opacity-40"
+            onClick={onBack}
+            disabled={index === 0}
+          >
+            Back
+          </button>
+          <button ref={nextRef} type="button" className="min-h-11 bg-zinc-950 px-4 text-[16px] text-white" onClick={onNext}>
+            {index === total - 1 ? "Finish" : "Next"}
+          </button>
+          <button type="button" className="min-h-11 px-3 text-[16px] text-zinc-700 underline" onClick={onClose}>
+            Skip tour
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}

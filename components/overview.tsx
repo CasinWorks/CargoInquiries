@@ -21,7 +21,7 @@ export function Overview() {
       <Tip id="overview">
         You are on the team desk. Open a sample, then use View as Customer to send one yourself. It will show up here. Nothing is emailed.
       </Tip>
-      <div className="flex flex-wrap gap-x-5 gap-y-3 border-y border-zinc-200 py-3">
+      <div className="flex flex-wrap gap-x-5 gap-y-3 border-y border-zinc-200 py-3" data-tour="pipeline">
         {STATUSES.map((status) => (
           <Link key={status.id} href={`/inquiries?status=${status.id}`} className="group">
             <span className="text-[18px] font-medium text-zinc-950">{stats.byStatus[status.id]}</span>
@@ -34,7 +34,7 @@ export function Overview() {
         {stats.won} won, {stats.lost} lost. Demo figures only.
       </p>
       <div className="mt-6 grid gap-8 lg:grid-cols-2">
-        <section>
+        <section data-tour="waiting">
           <h2 className="text-[15px] font-medium text-zinc-950">Waiting on information</h2>
           <Queue
             empty="No open inquiry has a needed item on the checklist."
@@ -45,7 +45,7 @@ export function Overview() {
             }))}
           />
         </section>
-        <section>
+        <section data-tour="followups">
           <h2 className="text-[15px] font-medium text-zinc-950">Sign-off, follow-up, validity</h2>
           <h3 className="mt-3 text-[12px] font-medium tracking-[0.04em] text-zinc-500 uppercase">Awaiting sign-off</h3>
           <Queue

@@ -14,6 +14,7 @@ import { DeskInput, DeskSelect, DeskText, SampleMark, SectionTitle } from "@/com
 import { OogTables, PieceReadout, weightLine } from "@/components/cargo-views";
 import { QuoteBuilder } from "@/components/quote-builder";
 import { Tip } from "@/components/shell";
+import { StageProgress } from "@/components/stage-progress";
 import { checkPiece } from "@/lib/calc";
 import { clarificationDraft } from "@/lib/clarify";
 import { formatFileSize } from "@/lib/format";
@@ -87,7 +88,10 @@ export function InquiryDetail({ id }: { id: string }) {
           {inquiry.reference}
           {inquiry.sample ? <SampleMark /> : null}
         </p>
-        <h1 className="mt-1 text-[20px] font-medium tracking-tight text-zinc-950">{inquiry.projectName}</h1>
+        <div className="mt-3">
+          <StageProgress inquiry={inquiry} audience="team" />
+        </div>
+        <h1 className="mt-4 text-[20px] font-medium tracking-tight text-zinc-950">{inquiry.projectName}</h1>
         <p className="mt-1 text-[13px] text-zinc-600">
           {inquiry.company}
           {inquiry.companyCity ? `, ${inquiry.companyCity}` : ""} · {inquiry.contactName}
@@ -162,7 +166,7 @@ export function InquiryDetail({ id }: { id: string }) {
           </label>
         </section>
 
-        <section className="mt-8 grid gap-3" id="pieces">
+        <section className="mt-8 grid gap-3" id="pieces" data-tour="pieces">
           <SectionTitle>Piece list</SectionTitle>
           <p className="text-[12px] text-zinc-500">Packed dimensions as recorded. Weight is per piece. Line freight tons are the greater of that line’s CBM and metric tons.</p>
           <PieceReadout pieces={inquiry.pieces} deckHeightM={inquiry.deckHeightM} />
@@ -177,12 +181,12 @@ export function InquiryDetail({ id }: { id: string }) {
           />
         </section>
 
-        <section className="mt-8 grid gap-3" id="checklist">
+        <section className="mt-8 grid gap-3" id="checklist" data-tour="missing">
           <SectionTitle>Missing information</SectionTitle>
           <GapList title="Still needed" empty="Nothing on the needed list." items={needed} />
           <GapList title="Provisional figures" empty="No figure is marked estimated." items={provisional} />
           <GapList title="Useful, not blocking" empty="Nothing else is flagged." items={later} />
-          <div>
+          <div data-tour="permits">
             <h3 className="text-[13px] font-medium text-zinc-950">Permit checklist</h3>
             <p className="mt-1 text-[12px] leading-snug text-zinc-500">
               Manual reminders. Coming later: no connection to DPWH, LTO, MMDA, or an expressway operator.
@@ -220,7 +224,7 @@ export function InquiryDetail({ id }: { id: string }) {
           </div>
         </section>
 
-        <section className="mt-8 grid gap-3" id="quote">
+        <section className="mt-8 grid gap-3" id="quote" data-tour="quote">
           <SectionTitle>Quote</SectionTitle>
           <QuoteBuilder
             key={inquiry.id}
@@ -229,7 +233,7 @@ export function InquiryDetail({ id }: { id: string }) {
           />
         </section>
 
-        <section className="mt-8 grid gap-3" id="activity">
+        <section className="mt-8 grid gap-3" id="activity" data-tour="activity">
           <SectionTitle>Activity</SectionTitle>
           <form
             className="grid max-w-xl gap-2"
@@ -281,7 +285,7 @@ export function InquiryDetail({ id }: { id: string }) {
         </section>
       </div>
 
-      <aside className="no-print h-fit border border-zinc-200 bg-white p-3 lg:sticky lg:top-16">
+      <aside className="no-print h-fit border border-zinc-200 bg-white p-3 lg:sticky lg:top-16" data-tour="stage">
         <label className="grid gap-1 text-[12px] text-zinc-600">
           Stage
           <DeskSelect aria-label="Stage" value={inquiry.status} onChange={(event) => setStatus(event.target.value as Status)}>

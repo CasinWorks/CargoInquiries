@@ -13,11 +13,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useDesk } from "@/lib/store";
+import { HelpMenu, TourRoot } from "@/components/tour";
 
 const TEAM_LINKS = [
   { href: "/", label: "Overview" },
   { href: "/inquiries", label: "Inquiries" },
   { href: "/customer", label: "Customer form" },
+  { href: "/handbook", label: "Handbook" },
   { href: "/guide", label: "How to read this" },
 ];
 
@@ -45,6 +47,7 @@ export function Shell({
   }
 
   return (
+    <TourRoot mode={mode}>
     <div className="min-h-screen">
       <a
         href="#content"
@@ -59,8 +62,9 @@ export function Shell({
             <span className="ml-2 text-[13px] font-medium text-zinc-950 sm:text-[14px]">Project Cargo Desk</span>
           </Link>
           <p className="hidden truncate text-[12px] text-zinc-500 md:block">Prepared for Interfreight Group (demo)</p>
-          <div className="ml-auto flex items-center gap-3">
-            <div className="flex items-center gap-2 text-[12px]" role="group" aria-label="View as">
+          <div className="ml-auto flex items-center gap-2 sm:gap-3">
+            <HelpMenu mode={mode} />
+            <div className="flex items-center gap-2 text-[12px]" data-tour="view-as" role="group" aria-label="View as">
               <span className="hidden text-zinc-500 sm:inline">View as</span>
               <button
                 type="button"
@@ -99,11 +103,7 @@ export function Shell({
               >
                 {menu ? "Close" : "Menu"}
               </button>
-            ) : (
-              <Link href="/guide" className="text-[12px] text-[#1e3a5f] hover:underline">
-                Guide
-              </Link>
-            )}
+            ) : null}
           </div>
         </div>
         {menu && mode === "team" ? (
@@ -155,7 +155,7 @@ export function Shell({
               Prepared for Interfreight Group. Fictional sample data only. Not Interfreight’s system, rates, customers, or logo.
             </p>
             <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-              <button type="button" className="underline" onClick={() => setResetOpen(true)}>
+              <button type="button" className="underline" data-tour="reset" onClick={() => setResetOpen(true)}>
                 Reset demo data
               </button>
               <button type="button" className="underline" onClick={() => desk.resetTips()}>
@@ -194,6 +194,7 @@ export function Shell({
         </DialogContent>
       </Dialog>
     </div>
+    </TourRoot>
   );
 }
 

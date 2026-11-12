@@ -61,6 +61,54 @@ export function GuideMemo() {
         <li>Which ports and permits do you touch most?</li>
         <li>Should customers fill a form, or only your own staff?</li>
       </ul>
+      <h2 className="mt-6 text-[15px] font-medium text-zinc-950">Handbook and tour</h2>
+      <p className="mt-2">
+        The handbook is a set of large slides, written for someone with no freight background. Open it from Help in the header, or go to the handbook page. Help also starts a short tour of the screen you are on. Arrow keys move the tour. Escape closes it.
+      </p>
+      <p className="mt-2">
+        <a className="text-[#1e3a5f] underline" href="/handbook">
+          Open the handbook
+        </a>
+      </p>
+      <h2 className="mt-6 text-[15px] font-medium text-zinc-950">Words, in plain language</h2>
+      <dl className="mt-2 grid gap-2">
+        <div>
+          <dt className="font-medium">CBM</dt>
+          <dd>How much space the cargo takes, in cubic metres.</dd>
+        </div>
+        <div>
+          <dt className="font-medium">Freight ton</dt>
+          <dd>The greater of the space and the weight. A first look, not a price.</dd>
+        </div>
+        <div>
+          <dt className="font-medium">Piece list</dt>
+          <dd>One line per item, with its own size and weight.</dd>
+        </div>
+        <div>
+          <dt className="font-medium">Out of gauge</dt>
+          <dd>Bigger than an example container size. A dash is not a fit and not an approval.</dd>
+        </div>
+        <div>
+          <dt className="font-medium">Incoterm</dt>
+          <dd>A short code for who pays for which part of the trip.</dd>
+        </div>
+        <div>
+          <dt className="font-medium">Flat rack</dt>
+          <dd>An open container frame for cargo that is too wide or too tall for a closed box.</dd>
+        </div>
+        <div>
+          <dt className="font-medium">Sign-off</dt>
+          <dd>A manager agrees the offer can be sent. Here it is a button, not a separate login.</dd>
+        </div>
+      </dl>
+      <h2 className="mt-6 text-[15px] font-medium text-zinc-950">For IT</h2>
+      <ul className="mt-2 list-disc space-y-1 pl-5">
+        <li>Run it with Node.js 20.9 or newer: npm install, then npm run dev, then open http://localhost:3847.</li>
+        <li>There is no login and no database. Inquiries are saved in this browser only.</li>
+        <li>Reset demo data in the footer restores the sample jobs and deletes what was added here.</li>
+        <li>npm run build checks that the app compiles. It is a normal Next.js app and can be hosted later. Nothing is deployed from this demo.</li>
+        <li>Known limits: no shared office data, no email, no automatic price, no live schedules, no permit filing, no duty calculation.</li>
+      </ul>
       <h2 className="mt-6 text-[15px] font-medium text-zinc-950">Where the data lives</h2>
       <p className="mt-2">
         In this browser only. Two computers do not share inquiries. Reset demo data, in the footer, puts the samples back and removes what you added. Sample dates sit around November 2026. If you open this later, some follow-ups will look overdue. That is the sample calendar, not a live feed.

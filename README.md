@@ -30,6 +30,8 @@ Leave that window open while you use the app. Stop it with Ctrl+C.
 
 The app opens on the team desk. Sample inquiries are marked SAMPLE. Use **View as Customer** to send an inquiry, then switch back. The new inquiry is in the same browser.
 
+**Help** in the header starts a short tour, opens the handbook (large slides), or opens the written guide. Arrow keys move a tour or the handbook. Escape closes a tour.
+
 Data stays in this browser only. It is not a shared server. **Reset demo data** in the footer puts the samples back.
 
 `npm run seed` checks that the sample file is intact. It does not import a database. `npm test` checks the CBM, freight-ton, and limit calculations.

@@ -13,12 +13,20 @@ import { formatCbm, formatFixed, formatKg, formatM, formatTons } from "@/lib/for
 import { packingLabel, sourceLabel, triLabel } from "@/lib/labels";
 import type { Piece } from "@/lib/types";
 
-export function CalcSummary({ pieces, deckHeightM }: { pieces: Piece[]; deckHeightM: string }) {
+export function CalcSummary({
+  pieces,
+  deckHeightM,
+  tourId,
+}: {
+  pieces: Piece[];
+  deckHeightM: string;
+  tourId?: string;
+}) {
   const totals = shipmentTotals(pieces);
   const checks = pieces.map((piece) => checkPiece(piece, deckHeightM));
   const overCount = checks.filter(pieceHasExceedance).length;
   return (
-    <aside className="border border-zinc-200 bg-white p-3">
+    <aside className="border border-zinc-200 bg-white p-3" data-tour={tourId}>
       <p className="text-[11px] font-medium tracking-[0.04em] text-zinc-500 uppercase">Shipment totals</p>
       <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-2">
         <Stat label="Total CBM" value={totals.counted ? formatFixed(totals.cbm, 2) : "—"} />

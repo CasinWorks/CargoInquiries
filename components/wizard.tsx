@@ -57,6 +57,15 @@ export function Wizard() {
     headingRef.current?.focus();
   }, [step]);
 
+  useEffect(() => {
+    function onWizardStep(event: Event) {
+      const next = (event as CustomEvent<number>).detail;
+      if (typeof next === "number") setStep(next);
+    }
+    window.addEventListener("pcd-wizard-step", onWizardStep);
+    return () => window.removeEventListener("pcd-wizard-step", onWizardStep);
+  }, []);
+
   if (!draft) return <p className="text-[13px] text-zinc-600">Opening the form…</p>;
 
   function patch(partial: Partial<InquiryDraft>) {
@@ -142,7 +151,7 @@ export function Wizard() {
         Length, width, and height are packed size, in metres, for one piece. You can leave the centre of gravity blank. It will stay on the checklist.
       </Tip>
       <div className="grid gap-8 lg:grid-cols-[180px_minmax(0,1fr)]">
-        <ol className="no-print grid content-start gap-1">
+        <ol className="no-print grid content-start gap-1" data-tour="wizard-steps">
           {STEPS.map((label, index) => (
             <li key={label}>
               <button
@@ -163,7 +172,7 @@ export function Wizard() {
             </li>
           ))}
         </ol>
-        <div>
+        <div data-tour="wizard-form">
           <h2 ref={headingRef} tabIndex={-1} className="sr-only">
             {STEPS[step]}
           </h2>
@@ -389,7 +398,7 @@ function PieceStep({
           </tbody>
         </table>
       </div>
-      <CalcSummary pieces={pieces} deckHeightM={draft.deckHeightM} />
+      <CalcSummary pieces={pieces} deckHeightM={draft.deckHeightM} tourId="wizard-calc" />
       <OogTables pieces={pieces} deckHeightM={draft.deckHeightM} />
     </div>
   );

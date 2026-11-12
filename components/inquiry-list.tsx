@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PageTitle, SampleMark } from "@/components/bits";
+import { RowProgress } from "@/components/stage-progress";
 import { Tip } from "@/components/shell";
 import { DeskInput, DeskSelect } from "@/components/bits";
 import { shipmentTotals } from "@/lib/calc";
@@ -48,7 +49,7 @@ export function InquiryList() {
         Search looks at the reference, company, project, commodity, contact, and the cities or ports.
       </PageTitle>
       <Tip id="list">SAMPLE marks a fictional job. An inquiry you send as a customer is not marked SAMPLE.</Tip>
-      <div className="flex flex-wrap items-end gap-2">
+      <div className="flex flex-wrap items-end gap-2" data-tour="filters">
         <label className="grid gap-1 text-[12px] text-zinc-600">
           Search
           <DeskInput
@@ -97,7 +98,7 @@ export function InquiryList() {
       {rows.length === 0 ? (
         <p className="mt-4 text-[13px] text-zinc-600">No inquiry matches that filter.</p>
       ) : (
-        <div className="mt-2 overflow-x-auto border border-zinc-200 bg-white">
+        <div className="mt-2 overflow-x-auto border border-zinc-200 bg-white" data-tour="inquiry-table">
           <table className="w-full min-w-[880px] border-collapse text-[13px]">
             <thead>
               <tr className="border-b border-zinc-200 text-left text-[11px] font-medium tracking-[0.04em] text-zinc-500 uppercase">
@@ -127,7 +128,10 @@ export function InquiryList() {
                       {inquiry.sample ? <SampleMark /> : null}
                     </td>
                     <td className="px-2 py-2">{inquiry.company}</td>
-                    <td className="px-2 py-2">{statusLabel(inquiry.status as Status)}</td>
+                    <td className="px-2 py-2">
+                      {statusLabel(inquiry.status as Status)}
+                      <RowProgress inquiry={inquiry} />
+                    </td>
                     <td className="px-2 py-2 text-zinc-600">
                       {inquiry.origin.city || "—"} → {inquiry.destination.city || "—"}
                       <span className="block text-[12px] text-zinc-500">{modeLabel(inquiry.mode as Mode | "")}</span>

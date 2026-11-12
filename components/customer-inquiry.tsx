@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { CalcSummary, OogTables, PieceReadout } from "@/components/cargo-views";
-import { statusLabel } from "@/lib/labels";
+import { StageProgress } from "@/components/stage-progress";
 import { useDesk } from "@/lib/store";
 import { formatDay } from "@/lib/time";
 
@@ -26,6 +26,7 @@ export function CustomerInquiry({ id }: { id: string }) {
   return (
     <div className="mx-auto grid max-w-4xl gap-4">
       <p className="font-mono text-[12px] text-zinc-500">{inquiry.reference}</p>
+      <StageProgress inquiry={inquiry} audience="customer" />
       <h1 className="text-[20px] font-medium text-zinc-950">{received ? "Inquiry received" : inquiry.projectName}</h1>
       {received ? (
         <p className="max-w-2xl text-[13px] leading-relaxed text-zinc-700">
@@ -34,9 +35,7 @@ export function CustomerInquiry({ id }: { id: string }) {
       ) : (
         <p className="text-[13px] text-zinc-600">{inquiry.projectName}</p>
       )}
-      <p className="text-[13px] text-zinc-600">
-        Stage on the desk: {statusLabel(inquiry.status)}. Internal notes and the costing sheet stay on the team side.
-      </p>
+      <p className="text-[13px] text-zinc-600">Internal notes and the costing sheet stay on the team side.</p>
       <p className="text-[13px] text-zinc-700">
         {inquiry.origin.city} → {inquiry.destination.city} · {inquiry.incoterm || "Incoterm not set"} · Ready {formatDay(inquiry.cargoReady)}
       </p>
