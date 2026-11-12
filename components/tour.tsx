@@ -22,8 +22,11 @@ import { CUSTOMER_TOUR, TEAM_TOUR, type TourSide, type TourStep } from "@/lib/to
 
 const OFFER_KEY = "pcd-tour-offer-v1";
 const WELCOME_KEY = "pcd-welcome-v1";
+const ACTIVE_TOUR_KEY = "pcd-tour-active-v1";
 
 type OfferState = { customer?: string; team?: string };
+
+type ActiveTour = { side: TourSide; index: number };
 
 type TourContextValue = {
   start: (side: TourSide) => void;
@@ -51,29 +54,77 @@ function writeOffer(side: TourSide) {
   localStorage.setItem(OFFER_KEY, JSON.stringify(next));
 }
 
+function readActiveTour(): ActiveTour | null {
+  try {
+    const raw = sessionStorage.getItem(ACTIVE_TOUR_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as ActiveTour;
+    if (parsed.side !== "team" && parsed.side !== "customer") return null;
+    if (!Number.isFinite(parsed.index) || parsed.index < 0) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeActiveTour(tour: ActiveTour | null) {
+  if (!tour) sessionStorage.removeItem(ACTIVE_TOUR_KEY);
+  else sessionStorage.setItem(ACTIVE_TOUR_KEY, JSON.stringify(tour));
+}
+
+function stepsFor(side: TourSide | null): TourStep[] {
+  if (side === "customer") return CUSTOMER_TOUR;
+  if (side === "team") return TEAM_TOUR;
+  return [];
+}
+
 export function TourRoot({ mode, children }: { mode: TourSide; children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const restored = useRef(false);
+  const startingTour = useRef(false);
   const [side, setSide] = useState<TourSide | null>(null);
   const [index, setIndex] = useState(0);
   const [offer, setOffer] = useState(false);
   const [welcome, setWelcome] = useState(false);
   const welcomeChecked = useRef(false);
 
-  const steps = side === "customer" ? CUSTOMER_TOUR : side === "team" ? TEAM_TOUR : [];
+  const steps = stepsFor(side);
   const step = steps[index];
+
+  useEffect(() => {
+    if (restored.current) return;
+    restored.current = true;
+    const active = readActiveTour();
+    if (!active) return;
+    const list = stepsFor(active.side);
+    if (!list.length) {
+      writeActiveTour(null);
+      return;
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- restore tour after Shell remounts on navigation
+    setSide(active.side);
+    setIndex(Math.min(active.index, list.length - 1));
+    setWelcome(false);
+    setOffer(false);
+  }, []);
+
+  useEffect(() => {
+    if (side) writeActiveTour({ side, index });
+  }, [side, index]);
 
   useEffect(() => {
     const stored = readOffer();
     const quiet = pathname.startsWith("/handbook") || pathname.startsWith("/guide");
     const seen = localStorage.getItem(WELCOME_KEY) === "dismissed";
+    const active = readActiveTour();
     // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is read after mount
-    setOffer(!quiet && !stored[mode] && seen);
+    setOffer(!quiet && !stored[mode] && seen && !active && !side);
     if (!welcomeChecked.current) {
       welcomeChecked.current = true;
-      setWelcome(!seen);
+      setWelcome(!seen && !active);
     }
-  }, [mode, pathname]);
+  }, [mode, pathname, side]);
 
   useEffect(() => {
     if (!step) return;
@@ -90,17 +141,28 @@ export function TourRoot({ mode, children }: { mode: TourSide; children: ReactNo
   }
 
   function begin(next: TourSide) {
+    startingTour.current = true;
     dismissWelcome();
     writeOffer(next);
     setOffer(false);
     setIndex(0);
     setSide(next);
+    writeActiveTour({ side: next, index: 0 });
+    window.setTimeout(() => {
+      startingTour.current = false;
+    }, 0);
   }
 
   function close() {
     if (side) writeOffer(side);
+    writeActiveTour(null);
     setSide(null);
     setIndex(0);
+  }
+
+  function setTourIndex(nextIndex: number) {
+    setIndex(nextIndex);
+    if (side) writeActiveTour({ side, index: nextIndex });
   }
 
   return (
@@ -110,6 +172,7 @@ export function TourRoot({ mode, children }: { mode: TourSide; children: ReactNo
         open={welcome && !side}
         onTour={() => begin(mode)}
         onClose={() => {
+          if (startingTour.current) return;
           dismissWelcome();
           writeOffer(mode);
           setOffer(false);
@@ -130,10 +193,10 @@ export function TourRoot({ mode, children }: { mode: TourSide; children: ReactNo
           step={step}
           index={index}
           total={steps.length}
-          onBack={() => setIndex((value) => Math.max(0, value - 1))}
+          onBack={() => setTourIndex(Math.max(0, index - 1))}
           onNext={() => {
             if (index >= steps.length - 1) close();
-            else setIndex((value) => value + 1);
+            else setTourIndex(index + 1);
           }}
           onClose={close}
         />
@@ -144,8 +207,13 @@ export function TourRoot({ mode, children }: { mode: TourSide; children: ReactNo
 
 function WelcomeModal({ open, onTour, onClose }: { open: boolean; onTour: () => void; onClose: () => void }) {
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="sm:max-w-lg">
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+    >
+      <DialogContent className="sm:max-w-lg" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle className="text-[22px] leading-snug">Welcome to Project Cargo Desk</DialogTitle>
           <DialogDescription className="text-[16px] leading-relaxed text-zinc-800">
@@ -166,7 +234,15 @@ function WelcomeModal({ open, onTour, onClose }: { open: boolean; onTour: () => 
           </a>
         </p>
         <div className="flex flex-wrap gap-2">
-          <button type="button" className="min-h-11 bg-zinc-950 px-4 text-[16px] text-white" onClick={onTour}>
+          <button
+            type="button"
+            className="min-h-11 bg-zinc-950 px-4 text-[16px] text-white"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onTour();
+            }}
+          >
             Take the tour
           </button>
           <Link href="/handbook" className="inline-flex min-h-11 items-center border border-zinc-300 px-4 text-[16px] text-zinc-950" onClick={onClose}>
