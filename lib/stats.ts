@@ -85,13 +85,25 @@ export function matchesQuery(inquiry: Inquiry, query: string): boolean {
   const hay = [
     inquiry.reference,
     inquiry.company,
+    inquiry.companyCity,
     inquiry.projectName,
     inquiry.commodity,
     inquiry.contactName,
+    inquiry.contactRole,
+    inquiry.email,
+    inquiry.phone,
+    inquiry.incoterm,
+    inquiry.origin.name,
     inquiry.origin.city,
+    inquiry.origin.country,
+    inquiry.destination.name,
     inquiry.destination.city,
+    inquiry.destination.country,
     inquiry.pol,
     inquiry.pod,
+    inquiry.mode,
+    inquiry.status,
+    ...inquiry.pieces.map((piece) => `${piece.id} ${piece.description}`),
   ]
     .join(" ")
     .toLowerCase();
@@ -100,4 +112,10 @@ export function matchesQuery(inquiry: Inquiry, query: string): boolean {
     .split(/\s+/)
     .filter(Boolean)
     .every((part) => hay.includes(part));
+}
+
+export function searchInquiries(inquiries: Inquiry[], query: string, limit = 8): Inquiry[] {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+  return inquiries.filter((inquiry) => matchesQuery(inquiry, trimmed)).slice(0, limit);
 }
