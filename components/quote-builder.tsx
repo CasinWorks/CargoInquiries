@@ -15,6 +15,7 @@ import { formatFixed, formatMoney } from "@/lib/format";
 import { INDICATIVE, LAYERS, LINE_STATUSES, SAMPLE_FIGURES, layerLabel, lineStatusLabel, modeLabel, statusLabel } from "@/lib/labels";
 import { factsFromInquiry, neededGaps } from "@/lib/missing";
 import { blankLine, blankQuote, diffQuotes, quoteReadyToSend, quoteTotals } from "@/lib/quote";
+import { downloadQuotePdf } from "@/lib/quote-pdf";
 import { formatDay, nowIso, uid } from "@/lib/time";
 import type { CostLine, Inquiry, Layer, QuoteVersion } from "@/lib/types";
 
@@ -318,8 +319,8 @@ export function QuoteBuilder({
           <p className="mt-2 text-[12px] text-zinc-600">Marked sent {formatDay(selected.sentAt)}. Outcome: {selected.outcome || "sent"}.</p>
         ) : null}
       </div>
-      <article className="border border-zinc-200 bg-white p-4" aria-label="Quotation preview">
-        <p className="font-mono text-[11px] tracking-wide text-zinc-500">QUOTATION PREVIEW · SAMPLE FIGURES</p>
+      <article id="quote-print" className="border border-zinc-200 bg-white p-4" aria-label="Quotation preview">
+        <p className="font-mono text-[11px] tracking-wide text-zinc-500">QUOTATION · SAMPLE FIGURES</p>
         <h3 className="mt-2 text-[16px] font-medium">
           v{selected.version} · {selected.kind}
         </h3>
@@ -336,14 +337,50 @@ export function QuoteBuilder({
           {inquiry.origin.city} → {inquiry.destination.city}
         </p>
         <p className="mt-2 text-[12px] text-zinc-500">{INDICATIVE}</p>
+        {selected.lines.filter((line) => line.description.trim() || line.amount > 0).length > 0 ? (
+          <table className="mt-4 w-full border-collapse text-[12px]">
+            <thead>
+              <tr className="border-b border-zinc-300 text-left">
+                <th className="py-1 font-medium">Description</th>
+                <th className="py-1 font-medium">Layer</th>
+                <th className="py-1 text-right font-medium">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {selected.lines
+                .filter((line) => line.description.trim() || line.amount > 0)
+                .map((line) => (
+                  <tr key={line.id} className="border-b border-zinc-100">
+                    <td className="py-1 pr-2">{line.description || "—"}</td>
+                    <td className="py-1 pr-2 text-zinc-600">{layerLabel(line.layer)}</td>
+                    <td className="py-1 text-right whitespace-nowrap">{formatMoney(line.amount, selected.currency)}</td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        ) : null}
         <p className="mt-3 text-[13px]">Sell price {formatMoney(totals.sell, selected.currency)}</p>
         <p className="mt-1 text-[12px] text-zinc-500">Valid until {formatDay(selected.validityDate)}. {selected.fxNote}</p>
+        {selected.inclusions.trim() ? (
+          <p className="mt-3 text-[12px] whitespace-pre-wrap text-zinc-700">
+            <span className="font-medium">Inclusions.</span> {selected.inclusions}
+          </p>
+        ) : null}
+        {selected.exclusions.trim() ? (
+          <p className="mt-2 text-[12px] whitespace-pre-wrap text-zinc-700">
+            <span className="font-medium">Exclusions.</span> {selected.exclusions}
+          </p>
+        ) : null}
         <p className="mt-3 text-[12px] whitespace-pre-wrap text-zinc-600">{selected.subjectTo}</p>
-        <p className="mt-3 text-[12px] text-zinc-500">
-          Print view only. This demo does not create a PDF file and does not email it.
+        <p className="no-print mt-3 text-[12px] text-zinc-500">
+          Downloads a PDF of this quote only — not the desk page. Nothing is emailed.
         </p>
-        <button type="button" className="no-print mt-2 text-[12px] text-[#1e3a5f] underline" onClick={() => window.print()}>
-          Print this page
+        <button
+          type="button"
+          className="no-print mt-2 text-[12px] text-[#1e3a5f] underline"
+          onClick={() => downloadQuotePdf(inquiry, selected)}
+        >
+          Download quote PDF
         </button>
       </article>
       <details className="text-[12px] leading-relaxed text-zinc-600">

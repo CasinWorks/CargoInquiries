@@ -46,9 +46,11 @@ assert.deepEqual(
 const hilaga = inquiries.find((inquiry) => inquiry.reference === "PCD-26-1810");
 assert.ok(hilaga);
 const hilagaNeeded = neededGaps(factsFromInquiry(hilaga)).map((gap) => gap.id);
-assert.ok(hilagaNeeded.includes("cog-P-01"));
-assert.ok(hilagaNeeded.includes("drawing"));
+assert.equal(hilagaNeeded.includes("cog-P-01"), false, "CoG is additional, not a prerequisite");
+assert.equal(hilagaNeeded.includes("drawing"), false, "drawing is additional, not a prerequisite");
 assert.ok(hilagaNeeded.includes("deck"));
+assert.ok(hilagaNeeded.includes("origin-access"));
+assert.ok(hilagaNeeded.includes("destination-access"));
 
 console.log(`seed ok: ${inquiries.length} sample inquiries`);
 for (const inquiry of inquiries) {

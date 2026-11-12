@@ -58,7 +58,7 @@ const SLIDES: { title: string; body: () => ReactNode }[] = [
         <ol className="mt-4 grid gap-2">
           {[
             "New — the form has been sent",
-            "Facts missing — size, weight, or a drawing is still unknown",
+            "Facts missing — size, weight, or site access is still unknown",
             "Check the route — can it leave the site and reach the port",
             "Type the costs — truck, port, ship, and so on",
             "Manager agrees — sign-off, which is a button in this demo",
@@ -124,7 +124,7 @@ const SLIDES: { title: string; body: () => ReactNode }[] = [
             </tbody>
           </table>
         </div>
-        <p className="mt-4">Under the progress bar, “What is missing / Next step” lists every gap in plain words, and the one thing to do next. Click a line and the page jumps there. Log a call or an email on the same page. The time is saved. Nothing is emailed from the demo.</p>
+        <p className="mt-4">Under the progress bar, “What is missing / Next step” lists every gap in plain words, and the one thing to do next. The inquiry is split into sections — route, pieces, documents, checklist, quote, activity. Sections with open items are marked. Click a missing line to open that section and highlight the field. Download quote PDF saves only the quotation as a PDF file.</p>
         <p className="mt-4">The permit list is a reminder. This demo does not file a permit.</p>
       </>
     ),

@@ -81,6 +81,7 @@ export function TourRoot({ mode, children }: { mode: TourSide; children: ReactNo
     if (step.wizardStep != null) {
       window.dispatchEvent(new CustomEvent("pcd-wizard-step", { detail: step.wizardStep }));
     }
+    window.dispatchEvent(new CustomEvent("pcd-inquiry-section", { detail: step.target }));
   }, [step, pathname, router]);
 
   function dismissWelcome() {

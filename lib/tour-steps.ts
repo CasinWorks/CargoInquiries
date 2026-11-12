@@ -95,7 +95,7 @@ export const TEAM_TOUR: TourStep[] = [
     target: "waiting",
     route: "/",
     title: "Still missing facts",
-    body: "These jobs cannot be priced properly yet. A size, a weight, or a drawing may be missing. Open one to see the checklist.",
+    body: "These jobs still need required facts such as site access or a deck height. Open one to see the checklist. Drawings and centre of gravity are optional extras.",
   },
   {
     target: "followups",
@@ -125,7 +125,7 @@ export const TEAM_TOUR: TourStep[] = [
     target: "next-step",
     route: "/inquiries/inq-1841",
     title: "What is missing, and the one next step",
-    body: "Each line is something still needed, or the single next action, such as typing a trucking cost or getting sign-off. Click a line and the page jumps to that spot. When nothing is missing, it says all details are complete.",
+    body: "Each line is something still needed, an optional extra, or the single next action. Click a line to open that part of the order and highlight the field. The inquiry is split into sections so you are not looking at everything at once.",
   },
   {
     target: "log-update",
@@ -143,7 +143,7 @@ export const TEAM_TOUR: TourStep[] = [
     target: "missing",
     route: "/inquiries/inq-1841",
     title: "What is still missing",
-    body: "The checklist says what to ask the customer for. A centre of gravity, for a heavy piece, is where the weight sits. If it is unknown, do not guess it for a lift.",
+    body: "The checklist says what to ask for. Required items block progress. Centre of gravity and lifting points are useful later — click a line to open that field. Do not guess a centre of gravity for a lift.",
   },
   {
     target: "permits",

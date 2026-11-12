@@ -74,17 +74,17 @@ export function missingItems(facts: CargoFacts): Gap[] {
     if (piece.cogKnown !== "yes") {
       gaps.push({
         id: `cog-${piece.id}`,
-        severity: "needed",
+        severity: "later",
         label: `${piece.id} centre of gravity`,
-        detail: `${piece.description || piece.id} is ${piece.weightKg.toLocaleString("en-US")} kg. The centre of gravity is not confirmed. A guessed centre of gravity is not used for lifting.`,
+        detail: `${piece.description || piece.id} is ${piece.weightKg.toLocaleString("en-US")} kg. Centre of gravity is useful for lifting later. It is not required to proceed with the inquiry.`,
       });
     }
     if (piece.liftingKnown !== "yes") {
       gaps.push({
         id: `lift-${piece.id}`,
-        severity: "needed",
+        severity: "later",
         label: `${piece.id} lifting points`,
-        detail: `${piece.description || piece.id} has no confirmed lifting points. Hook height is not calculated here.`,
+        detail: `${piece.description || piece.id} has no confirmed lifting points yet. Useful additional detail later. Hook height is not calculated here.`,
       });
     }
   }
@@ -127,9 +127,9 @@ export function missingItems(facts: CargoFacts): Gap[] {
   if (facts.pieces.some((piece) => needsDrawing(piece, facts.deckHeightM)) && !hasTechnicalDrawing(facts.files)) {
     gaps.push({
       id: "drawing",
-      severity: "needed",
+      severity: "later",
       label: "Dimensioned drawing",
-      detail: "At least one piece is outside a 40' HC example envelope or a Philippine road reference. A drawing tied to the piece ID and revision is still missing.",
+      detail: "A dimensioned drawing helps when a piece looks out of gauge. Useful additional info — not required to proceed with the inquiry.",
     });
   }
 
