@@ -21,13 +21,13 @@ export type TodoList = {
 
 export type InquirySectionId = "summary" | "pieces" | "documents" | "checklist" | "quote" | "activity";
 
-export const INQUIRY_SECTIONS: { id: InquirySectionId; label: string }[] = [
-  { id: "summary", label: "Route & terms" },
-  { id: "pieces", label: "Pieces" },
-  { id: "documents", label: "Documents" },
-  { id: "checklist", label: "Checklist" },
-  { id: "quote", label: "Quote" },
-  { id: "activity", label: "Activity" },
+export const INQUIRY_SECTIONS: { id: InquirySectionId; number: number; label: string }[] = [
+  { id: "summary", number: 1, label: "Route & terms" },
+  { id: "pieces", number: 2, label: "Pieces" },
+  { id: "documents", number: 3, label: "Documents" },
+  { id: "checklist", number: 4, label: "Checklist" },
+  { id: "quote", number: 5, label: "Quote" },
+  { id: "activity", number: 6, label: "Activity" },
 ];
 
 export function fieldSelector(gapId: string): string {
