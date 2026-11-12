@@ -26,7 +26,7 @@ export function Overview() {
         </Link>
       </p>
       <Tip id="overview">
-        You are on the team desk. Open a sample, then use View as Customer to send one yourself. It will show up here. Nothing is emailed.
+        You are on the team desk. Use Search in the top bar for a reference, company, or city. Open a sample, then use View as Customer to send one yourself. Nothing is emailed.
       </Tip>
       <div className="flex flex-wrap gap-x-5 gap-y-3 border-y border-zinc-200 py-3" data-tour="pipeline">
         {STATUSES.map((status) => (

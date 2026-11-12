@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { DeskSearch } from "@/components/desk-search";
 import { useDesk } from "@/lib/store";
 import { HelpMenu, TourRoot } from "@/components/tour";
 
@@ -62,8 +63,9 @@ export function Shell({
             <span className="font-mono text-[11px] tracking-wide text-zinc-500">PCD</span>
             <span className="ml-2 text-[13px] font-medium text-zinc-950 sm:text-[14px]">Project Cargo Desk</span>
           </Link>
-          <p className="hidden truncate text-[12px] text-zinc-500 lg:block">Demo, can be customized to your process</p>
-          <div className="ml-auto flex items-center gap-2 sm:gap-3">
+          <p className="hidden truncate text-[12px] text-zinc-500 xl:block">Demo, can be customized to your process</p>
+          <div className="ml-auto flex min-w-0 items-center gap-2 sm:gap-3">
+            {mode === "team" ? <DeskSearch /> : null}
             <HelpMenu mode={mode} />
             <div className="flex items-center gap-2 text-[12px]" data-tour="view-as" role="group" aria-label="View as">
               <span className="hidden text-zinc-500 sm:inline">View as</span>

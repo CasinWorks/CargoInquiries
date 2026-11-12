@@ -107,7 +107,7 @@ export const TEAM_TOUR: TourStep[] = [
     target: "filters",
     route: "/inquiries",
     title: "Search the list",
-    body: "Type a company, a city, or a reference such as PCD-26-1841. You can also filter by stage. SAMPLE means the job is fiction, for practice.",
+    body: "Type a company, a city, or a reference such as PCD-26-1841. The same search is in the top bar on every team page. You can also filter by stage, mode, or Incoterm (FOB, CIF, and the rest). SAMPLE means the job is fiction, for practice.",
   },
   {
     target: "inquiry-table",

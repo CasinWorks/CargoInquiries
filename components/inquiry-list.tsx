@@ -10,12 +10,12 @@ import { Tip } from "@/components/shell";
 import { DeskInput, DeskSelect } from "@/components/bits";
 import { shipmentTotals } from "@/lib/calc";
 import { formatFixed } from "@/lib/format";
-import { isClosed, MODES, modeLabel, statusLabel, STATUSES } from "@/lib/labels";
+import { INCOTERMS, isClosed, MODES, modeLabel, statusLabel, STATUSES } from "@/lib/labels";
 import { factsFromInquiry, neededGaps } from "@/lib/missing";
 import { matchesQuery } from "@/lib/stats";
 import { useDesk } from "@/lib/store";
 import { formatDay } from "@/lib/time";
-import type { Mode, Status } from "@/lib/types";
+import type { Incoterm, Mode, Status } from "@/lib/types";
 
 export function InquiryList() {
   const desk = useDesk();
@@ -24,6 +24,7 @@ export function InquiryList() {
   const q = params.get("q") ?? "";
   const status = params.get("status") ?? "";
   const mode = params.get("mode") ?? "";
+  const incoterm = params.get("incoterm") ?? "";
   const follow = params.get("follow") === "1";
   const gaps = params.get("gaps") === "1";
 
@@ -38,6 +39,7 @@ export function InquiryList() {
     if (q && !matchesQuery(inquiry, q)) return false;
     if (status && inquiry.status !== status) return false;
     if (mode && inquiry.mode !== mode) return false;
+    if (incoterm && inquiry.incoterm !== incoterm) return false;
     if (follow && !(inquiry.followUpDate && desk.today && inquiry.followUpDate <= desk.today && !isClosed(inquiry.status))) {
       return false;
     }
@@ -48,19 +50,30 @@ export function InquiryList() {
   return (
     <div>
       <PageTitle kicker="Team desk" title="Inquiries">
-        Search looks at the reference, company, project, commodity, contact, and the cities or ports.
+        Search looks at the reference, company, project, commodity, contact, cities, ports, Incoterm, and piece names. You can also search from the top bar.
       </PageTitle>
       <Tip id="list">SAMPLE marks a fictional job. An inquiry you send as a customer is not marked SAMPLE.</Tip>
       <div className="flex flex-wrap items-end gap-2" data-tour="filters">
         <label className="grid gap-1 text-[12px] text-zinc-600">
           Search
-          <DeskInput
-            value={q}
-            onChange={(event) => setParam("q", event.target.value)}
-            placeholder="PCD, company, Batangas…"
-            aria-label="Search inquiries"
-            className="w-56"
-          />
+          <span className="flex gap-1">
+            <DeskInput
+              value={q}
+              onChange={(event) => setParam("q", event.target.value)}
+              placeholder="PCD, company, Batangas, FOB…"
+              aria-label="Search inquiries"
+              className="w-56 sm:w-72"
+            />
+            {q ? (
+              <button
+                type="button"
+                className="h-8 border border-zinc-300 px-2 text-[12px] text-zinc-700 hover:bg-zinc-50"
+                onClick={() => setParam("q", "")}
+              >
+                Clear
+              </button>
+            ) : null}
+          </span>
         </label>
         <label className="grid gap-1 text-[12px] text-zinc-600">
           Stage
@@ -84,6 +97,23 @@ export function InquiryList() {
             ))}
           </DeskSelect>
         </label>
+        <label className="grid gap-1 text-[12px] text-zinc-600">
+          Incoterm
+          <DeskSelect
+            value={incoterm}
+            onChange={(event) => setParam("incoterm", event.target.value)}
+            aria-label="Filter by Incoterm"
+            className="w-40"
+          >
+            <option value="">All Incoterms</option>
+            {INCOTERMS.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.id}
+                {item.seaOnly ? " (sea)" : ""}
+              </option>
+            ))}
+          </DeskSelect>
+        </label>
         <label className="flex items-center gap-2 pb-1 text-[13px] text-zinc-700">
           <input type="checkbox" checked={follow} onChange={(event) => setParam("follow", event.target.checked ? "1" : "")} />
           Follow-up due
@@ -95,10 +125,13 @@ export function InquiryList() {
       </div>
       <p className="mt-3 text-[12px] text-zinc-500">
         {rows.length} {rows.length === 1 ? "inquiry" : "inquiries"}
+        {q.trim() ? ` matching “${q.trim()}”` : ""}
       </p>
       <p className="mt-1 text-[12px] text-zinc-500 lg:hidden">Scroll sideways for lane, ready date, and freight tons.</p>
       {rows.length === 0 ? (
-        <p className="mt-4 text-[13px] text-zinc-600">No inquiry matches that filter.</p>
+        <p className="mt-4 text-[13px] text-zinc-600">
+          No inquiry matches that search{q.trim() ? ` for “${q.trim()}”` : ""}. Try a reference like PCD-26-1841, a city, or a company name.
+        </p>
       ) : (
         <div className="mt-2 overflow-x-auto border border-zinc-200 bg-white" data-tour="inquiry-table">
           <table className="w-full min-w-[880px] border-collapse text-[13px]">
@@ -139,7 +172,10 @@ export function InquiryList() {
                     </td>
                     <td className="px-2 py-2 text-zinc-600">
                       {inquiry.origin.city || "—"} → {inquiry.destination.city || "—"}
-                      <span className="block text-[12px] text-zinc-500">{modeLabel(inquiry.mode as Mode | "")}</span>
+                      <span className="block text-[12px] text-zinc-500">
+                        {modeLabel(inquiry.mode as Mode | "")}
+                        {inquiry.incoterm ? ` · ${inquiry.incoterm as Incoterm}` : ""}
+                      </span>
                     </td>
                     <td className="whitespace-nowrap px-2 py-2">{formatDay(inquiry.cargoReady)}</td>
                     <td className="whitespace-nowrap px-2 py-2 text-right">{totals.counted ? formatFixed(totals.freightTons, 2) : "—"}</td>
