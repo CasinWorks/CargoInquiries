@@ -167,6 +167,8 @@ export type Note = {
   text: string;
 };
 
+export type InquirySource = "email" | "phone" | "walk_in" | "web";
+
 export type TimelineKind =
   | "created"
   | "status"
@@ -176,7 +178,9 @@ export type TimelineKind =
   | "signoff"
   | "outcome"
   | "file"
-  | "clarification";
+  | "clarification"
+  | "call"
+  | "email";
 
 export type TimelineEvent = {
   id: string;
@@ -192,6 +196,7 @@ export type Inquiry = {
   createdAt: string;
   updatedAt: string;
   status: Status;
+  source?: InquirySource;
   company: string;
   companyCity: string;
   contactName: string;
@@ -225,6 +230,8 @@ export type Inquiry = {
   timeline: TimelineEvent[];
   quotes: QuoteVersion[];
   followUpDate: string;
+  followUpWho?: string;
+  clearedGaps?: string[];
   lostReason: string;
   handoverNote: string;
   permitDone: string[];

@@ -73,6 +73,8 @@ const terms = {
   subjectTo: DEFAULT_SUBJECT,
 };
 
+const SAMPLE_SOURCES = ["email", "phone", "email", "phone", "email", "phone", "email", "web", "phone", "email", "walk_in"] as const;
+
 export function seedInquiries(): Inquiry[] {
   return [
     inquiry1841(),
@@ -86,7 +88,12 @@ export function seedInquiries(): Inquiry[] {
     inquiry1744(),
     inquiry1860(),
     inquiry1702(),
-  ];
+  ].map((inquiry, index) => ({
+    ...inquiry,
+    source: SAMPLE_SOURCES[index],
+    followUpWho: inquiry.followUpDate ? inquiry.assignment.sales || "reyes" : "",
+    clearedGaps: inquiry.clearedGaps ?? [],
+  }));
 }
 
 function inquiry1841(): Inquiry {

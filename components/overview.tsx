@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { staffName } from "@/lib/labels";
+import { inquiryTodos } from "@/lib/todos";
 import { PageTitle, SampleMark } from "@/components/bits";
 import { Tip } from "@/components/shell";
 import { statusLabel, STATUSES } from "@/lib/labels";
@@ -18,6 +20,11 @@ export function Overview() {
       <PageTitle kicker="Team desk" title="Overview">
         Counts come from the inquiries saved in this browser. Sample jobs are marked SAMPLE. They are not Interfreight’s book of business.
       </PageTitle>
+      <p className="mb-4">
+        <Link href="/inquiries/new" data-tour="new-from-call" className="inline-flex min-h-11 items-center bg-zinc-950 px-4 text-[16px] text-white">
+          New inquiry from email or call
+        </Link>
+      </p>
       <Tip id="overview">
         You are on the team desk. Open a sample, then use View as Customer to send one yourself. It will show up here. Nothing is emailed.
       </Tip>
@@ -62,7 +69,7 @@ export function Overview() {
             rows={stats.followUps.map((inquiry) => ({
               href: `/inquiries/${inquiry.id}`,
               title: inquiry.projectName,
-              meta: `${inquiry.reference} · ${formatDay(inquiry.followUpDate)}`,
+              meta: `${inquiry.reference} · ${formatDay(inquiry.followUpDate)}${inquiry.followUpWho ? ` · ${staffName(inquiry.followUpWho)}` : ""} · ${inquiryTodos(inquiry, desk.today).summary}`,
             }))}
           />
           <h3 className="mt-4 text-[12px] font-medium tracking-[0.04em] text-zinc-500 uppercase">Validity inside 7 days</h3>
@@ -99,6 +106,7 @@ export function Overview() {
                   <td className="px-2 py-2">
                     {inquiry.projectName}
                     {inquiry.sample ? <SampleMark /> : null}
+                    <p className="mt-1 text-[12px] text-zinc-600">{inquiryTodos(inquiry, desk.today).summary}</p>
                   </td>
                   <td className="px-2 py-2">{statusLabel(inquiry.status)}</td>
                   <td className="px-2 py-2 text-zinc-600">{formatDay(inquiry.updatedAt)}</td>

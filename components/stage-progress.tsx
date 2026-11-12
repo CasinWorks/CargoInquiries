@@ -2,7 +2,15 @@ import { formatDay } from "@/lib/time";
 import { inquiryProgress } from "@/lib/progress";
 import type { Inquiry } from "@/lib/types";
 
-export function StageProgress({ inquiry, audience }: { inquiry: Inquiry; audience: "team" | "customer" }) {
+export function StageProgress({
+  inquiry,
+  audience,
+  onChooseStage,
+}: {
+  inquiry: Inquiry;
+  audience: "team" | "customer";
+  onChooseStage?: (stageId: string) => void;
+}) {
   const progress = inquiryProgress(inquiry, audience);
   const fill = Math.round((progress.stepNumber / progress.total) * 100);
   const ended = progress.ended === "lost" || progress.ended === "expired";
@@ -22,6 +30,11 @@ export function StageProgress({ inquiry, audience }: { inquiry: Inquiry; audienc
       <ol className="hidden gap-2 sm:grid" style={{ gridTemplateColumns: `repeat(${progress.total}, minmax(0, 1fr))` }}>
         {progress.stages.map((stage) => (
           <li key={stage.id} className="min-w-0" aria-current={stage.state === "current" || stage.state === "ended" ? "step" : undefined}>
+            {onChooseStage && stage.state !== "current" ? (
+              <button type="button" className="mb-1 text-left text-[12px] text-[#1e3a5f] underline" onClick={() => onChooseStage(stage.id)}>
+                Move here
+              </button>
+            ) : null}
             <div
               className={
                 stage.state === "future"
@@ -62,6 +75,17 @@ export function StageProgress({ inquiry, audience }: { inquiry: Inquiry; audienc
         ))}
       </ol>
       <p className="mt-3 hidden text-[16px] leading-snug text-zinc-800 sm:block">{progress.now}</p>
+      {onChooseStage && progress.ended == null && progress.stepNumber < progress.total ? (
+        <button
+          type="button"
+          className="mt-3 min-h-11 bg-zinc-950 px-4 text-[16px] text-white"
+          onClick={() => onChooseStage(progress.stages[progress.stepNumber].id)}
+        >
+          {progress.stages[progress.stepNumber].id === "result"
+            ? "Record the result"
+            : `Move to next stage: ${progress.stages[progress.stepNumber].label}`}
+        </button>
+      ) : null}
     </section>
   );
 }

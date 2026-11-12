@@ -30,6 +30,7 @@ const SLIDES: { title: string; body: () => ReactNode }[] = [
         <p>Requests usually arrive by email or by phone.</p>
         <p className="mt-4">The size is missing, or the weight is a guess, or the drawing comes a week later. People write back and forth.</p>
         <p className="mt-4">The prices often sit in spreadsheets. It is easy to lose what was offered, and when it expires.</p>
+        <p className="mt-4">On this desk, staff type the call or the email in themselves. The web form is only an extra way in.</p>
       </>
     ),
   },
@@ -123,7 +124,8 @@ const SLIDES: { title: string; body: () => ReactNode }[] = [
             </tbody>
           </table>
         </div>
-        <p className="mt-4">Missing information is the list of questions still open. The permit list is a reminder. This demo does not file a permit.</p>
+        <p className="mt-4">Under the progress bar, “What is missing / Next step” lists every gap in plain words, and the one thing to do next. Click a line and the page jumps there. Log a call or an email on the same page. The time is saved. Nothing is emailed from the demo.</p>
+        <p className="mt-4">The permit list is a reminder. This demo does not file a permit.</p>
       </>
     ),
   },

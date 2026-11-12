@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { CalcSummary, OogTables, PieceReadout } from "@/components/cargo-views";
+import { NextStepPanel } from "@/components/next-step";
+import { SourceBadge } from "@/components/order-updates";
 import { StageProgress } from "@/components/stage-progress";
 import { useDesk } from "@/lib/store";
 import { formatDay } from "@/lib/time";
@@ -25,8 +27,12 @@ export function CustomerInquiry({ id }: { id: string }) {
   const received = params.get("received") === "1";
   return (
     <div className="mx-auto grid max-w-4xl gap-4">
-      <p className="font-mono text-[12px] text-zinc-500">{inquiry.reference}</p>
+      <p className="font-mono text-[12px] text-zinc-500">
+        {inquiry.reference}
+        <SourceBadge inquiry={inquiry} />
+      </p>
       <StageProgress inquiry={inquiry} audience="customer" />
+      <NextStepPanel inquiry={inquiry} today={desk.today} audience="customer" />
       <h1 className="text-[20px] font-medium text-zinc-950">{received ? "Inquiry received" : inquiry.projectName}</h1>
       {received ? (
         <p className="max-w-2xl text-[13px] leading-relaxed text-zinc-700">

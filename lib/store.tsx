@@ -29,6 +29,7 @@ type DeskContextValue = {
   resetTips: () => void;
   resetDemo: () => void;
   addInquiry: (draft: InquiryDraft) => Inquiry;
+  addQuickInquiry: (inquiry: Inquiry) => void;
   updateInquiry: (id: string, updater: (current: Inquiry) => Inquiry) => void;
 };
 
@@ -179,6 +180,7 @@ export function DeskProvider({ children }: { children: ReactNode }) {
           id: uid(),
           reference: nextReference(current),
           sample: false,
+          source: "web",
           createdAt: stamp,
           updatedAt: stamp,
           status,
@@ -196,6 +198,9 @@ export function DeskProvider({ children }: { children: ReactNode }) {
         };
         commit([inquiry, ...current]);
         return inquiry;
+      },
+      addQuickInquiry: (inquiry) => {
+        commit([inquiry, ...(inquiries ?? [])]);
       },
       updateInquiry: (id, updater) => {
         const current = inquiries ?? [];

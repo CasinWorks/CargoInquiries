@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PageTitle, SampleMark } from "@/components/bits";
+import { RowUpdate, SourceBadge } from "@/components/order-updates";
 import { RowProgress } from "@/components/stage-progress";
+import { inquiryTodos } from "@/lib/todos";
 import { Tip } from "@/components/shell";
 import { DeskInput, DeskSelect } from "@/components/bits";
 import { shipmentTotals } from "@/lib/calc";
@@ -109,6 +111,7 @@ export function InquiryList() {
                 <th scope="col" className="px-2 py-2 font-medium">Lane</th>
                 <th scope="col" className="px-2 py-2 font-medium">Ready</th>
                 <th scope="col" className="px-2 py-2 text-right font-medium">Freight tons</th>
+                <th scope="col" className="px-2 py-2 font-medium">Update</th>
               </tr>
             </thead>
             <tbody>
@@ -120,12 +123,14 @@ export function InquiryList() {
                       <Link href={`/inquiries/${inquiry.id}`} className="text-[#1e3a5f] hover:underline">
                         {inquiry.reference}
                       </Link>
+                      <SourceBadge inquiry={inquiry} />
                     </td>
                     <td className="px-2 py-2">
                       <Link href={`/inquiries/${inquiry.id}`} className="text-zinc-950 hover:underline">
                         {inquiry.projectName}
                       </Link>
                       {inquiry.sample ? <SampleMark /> : null}
+                      <p className="mt-1 text-[12px] text-zinc-600">{inquiryTodos(inquiry, desk.today).summary}</p>
                     </td>
                     <td className="px-2 py-2">{inquiry.company}</td>
                     <td className="px-2 py-2">
@@ -138,6 +143,9 @@ export function InquiryList() {
                     </td>
                     <td className="whitespace-nowrap px-2 py-2">{formatDay(inquiry.cargoReady)}</td>
                     <td className="whitespace-nowrap px-2 py-2 text-right">{totals.counted ? formatFixed(totals.freightTons, 2) : "—"}</td>
+                    <td className="px-2 py-2">
+                      <RowUpdate inquiry={inquiry} />
+                    </td>
                   </tr>
                 );
               })}

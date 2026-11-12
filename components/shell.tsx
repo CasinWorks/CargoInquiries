@@ -17,6 +17,7 @@ import { HelpMenu, TourRoot } from "@/components/tour";
 
 const TEAM_LINKS = [
   { href: "/", label: "Overview" },
+  { href: "/inquiries/new", label: "From email or call" },
   { href: "/inquiries", label: "Inquiries" },
   { href: "/customer", label: "Customer form" },
   { href: "/handbook", label: "Handbook" },
@@ -126,7 +127,12 @@ export function Shell({
           <aside className="no-print sticky top-12 hidden h-[calc(100vh-3rem)] w-48 shrink-0 border-r border-zinc-200 bg-zinc-100 lg:block">
             <nav className="grid gap-0.5 p-3" aria-label="Desk">
               {TEAM_LINKS.map((link) => {
-                const active = link.href === "/" ? pathname === "/" : pathname === link.href || pathname.startsWith(`${link.href}/`);
+                const active =
+                  link.href === "/"
+                    ? pathname === "/"
+                    : link.href === "/inquiries"
+                      ? pathname === "/inquiries" || (/^\/inquiries\/.+/.test(pathname) && !pathname.startsWith("/inquiries/new"))
+                      : pathname === link.href || pathname.startsWith(`${link.href}/`);
                 return (
                   <Link
                     key={link.href}

@@ -74,7 +74,8 @@ function sentAt(inquiry: Inquiry): string {
 }
 
 function missingCount(inquiry: Inquiry): number {
-  return neededGaps(factsFromInquiry(inquiry)).length;
+  const cleared = new Set(inquiry.clearedGaps ?? []);
+  return neededGaps(factsFromInquiry(inquiry)).filter((gap) => !cleared.has(gap.id)).length;
 }
 
 function teamNow(inquiry: Inquiry): string {

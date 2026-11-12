@@ -14,7 +14,10 @@ import { DeskInput, DeskSelect, DeskText, SampleMark, SectionTitle } from "@/com
 import { OogTables, PieceReadout, weightLine } from "@/components/cargo-views";
 import { QuoteBuilder } from "@/components/quote-builder";
 import { Tip } from "@/components/shell";
+import { FollowUpWho, LogUpdate, MoveStageDialog, SourceBadge, TimelineMark } from "@/components/order-updates";
+import { NextStepPanel } from "@/components/next-step";
 import { StageProgress } from "@/components/stage-progress";
+import type { LogKind } from "@/lib/order";
 import { checkPiece } from "@/lib/calc";
 import { clarificationDraft } from "@/lib/clarify";
 import { formatFileSize } from "@/lib/format";
@@ -47,6 +50,9 @@ export function InquiryDetail({ id }: { id: string }) {
   const [handover, setHandover] = useState("Handed to operations as a demo step. No job file is created.");
   const [mailOpen, setMailOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [moveStage, setMoveStage] = useState<string | null>(null);
+  const [focusKind, setFocusKind] = useState<LogKind | "">("");
+  const [logKey, setLogKey] = useState(0);
 
   if (!inquiry) {
     return <p className="text-[13px] text-zinc-600">That inquiry is not in this browser.</p>;
@@ -75,7 +81,8 @@ export function InquiryDetail({ id }: { id: string }) {
   }
 
   const gaps = missingItems(factsFromInquiry(inquiry));
-  const needed = gaps.filter((gap) => gap.severity === "needed");
+  const cleared = new Set(inquiry.clearedGaps ?? []);
+  const needed = gaps.filter((gap) => gap.severity === "needed" && !cleared.has(gap.id));
   const provisional = gaps.filter((gap) => gap.severity === "provisional");
   const later = gaps.filter((gap) => gap.severity === "later");
   const permits = permitItems(inquiry);
@@ -87,9 +94,26 @@ export function InquiryDetail({ id }: { id: string }) {
         <p className="font-mono text-[12px] text-zinc-500">
           {inquiry.reference}
           {inquiry.sample ? <SampleMark /> : null}
+          <SourceBadge inquiry={inquiry} />
         </p>
-        <div className="mt-3">
-          <StageProgress inquiry={inquiry} audience="team" />
+        <div className="mt-3 grid gap-3">
+          <StageProgress inquiry={inquiry} audience="team" onChooseStage={setMoveStage} />
+          <NextStepPanel
+            inquiry={inquiry}
+            today={desk.today}
+            audience="team"
+            onAction={(action) => {
+              if (action === "log-call") {
+                setFocusKind("call");
+                setLogKey((value) => value + 1);
+              }
+              if (action === "log-email") {
+                setFocusKind("email_in");
+                setLogKey((value) => value + 1);
+              }
+            }}
+          />
+          <LogUpdate key={`${focusKind}-${logKey}`} inquiry={inquiry} initialKind={focusKind} />
         </div>
         <h1 className="mt-4 text-[20px] font-medium tracking-tight text-zinc-950">{inquiry.projectName}</h1>
         <p className="mt-1 text-[13px] text-zinc-600">
@@ -278,7 +302,10 @@ export function InquiryDetail({ id }: { id: string }) {
             {[...inquiry.timeline].reverse().map((event) => (
               <li key={event.id} className="grid grid-cols-[140px_minmax(0,1fr)] gap-3 text-[13px]">
                 <time className="text-[12px] text-zinc-500">{formatWhen(event.at)}</time>
-                <span>{event.text}</span>
+                <span>
+                  <TimelineMark kind={event.kind} />
+                  {event.text}
+                </span>
               </li>
             ))}
           </ol>
@@ -360,6 +387,7 @@ export function InquiryDetail({ id }: { id: string }) {
             }
           />
         </label>
+        <FollowUpWho inquiry={inquiry} />
         {inquiry.lostReason ? <p className="mt-3 text-[12px] text-zinc-600">Lost: {inquiry.lostReason}</p> : null}
         {inquiry.handoverNote ? <p className="mt-3 text-[12px] text-zinc-600">{inquiry.handoverNote}</p> : null}
         {inquiry.status === "quoted_budgetary" || inquiry.status === "quoted_firm" || inquiry.status === "revision_requested" ? (
@@ -444,6 +472,7 @@ export function InquiryDetail({ id }: { id: string }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <MoveStageDialog inquiry={inquiry} stageId={moveStage} onClose={() => setMoveStage(null)} />
       <Dialog open={mailOpen} onOpenChange={setMailOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>

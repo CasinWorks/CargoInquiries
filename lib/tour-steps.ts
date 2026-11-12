@@ -77,7 +77,13 @@ export const TEAM_TOUR: TourStep[] = [
     target: "view-as",
     route: "/",
     title: "You are on the team desk",
-    body: "This is the side that reads inquiries and prepares a price. Switch to Customer if you want to send one yourself. There is no password.",
+    body: "This is the side that reads inquiries and prepares a price. Most customers phone or email. Switch to Customer only if you want to try the web form. There is no password.",
+  },
+  {
+    target: "new-from-call",
+    route: "/",
+    title: "Start a job from a call or an email",
+    body: "Press New inquiry from email or call while you are still on the phone or reading the message. Company, contact, and a short description are enough. Sizes can be added later. Nothing is emailed.",
   },
   {
     target: "pipeline",
@@ -113,7 +119,19 @@ export const TEAM_TOUR: TourStep[] = [
     target: "progress",
     route: "/inquiries/inq-1841",
     title: "Where this job is now",
-    body: "The bar at the top is the path from received to a result. The filled steps are done. The dark one is now, and the sentence says who should act next. If the customer asks for a change, the job goes back to preparing the quote. Lost and expired are endings, not a success.",
+    body: "The bar at the top is the path from received to a result. Click a later step, or Move to next stage, to update it after a call. Lost and expired are endings, not a success. A change request sends the job back to preparing the quote.",
+  },
+  {
+    target: "next-step",
+    route: "/inquiries/inq-1841",
+    title: "What is missing, and the one next step",
+    body: "Each line is something still needed, or the single next action, such as typing a trucking cost or getting sign-off. Click a line and the page jumps to that spot. When nothing is missing, it says all details are complete.",
+  },
+  {
+    target: "log-update",
+    route: "/inquiries/inq-1841",
+    title: "Log the call or the email",
+    body: "Press Logged a call, Received email, or Sent email, and add a short note. The time is saved on the timeline. You can also mark which missing items the customer says they sent. This desk does not send the email for you.",
   },
   {
     target: "pieces",

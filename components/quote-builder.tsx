@@ -267,7 +267,7 @@ export function QuoteBuilder({
           >
             Ask for sign-off
           </Button>
-          <Button type="button" size="sm" onClick={() => setSignOpen(true)}>
+          <Button type="button" id="record-signoff" size="sm" onClick={() => setSignOpen(true)}>
             Record sign-off
           </Button>
           <Button
@@ -288,6 +288,7 @@ export function QuoteBuilder({
           <Button
             type="button"
             size="sm"
+            id="mark-sent"
             onClick={() => {
               const reason = quoteReadyToSend(selected);
               if (reason) {
