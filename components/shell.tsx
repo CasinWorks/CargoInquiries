@@ -62,7 +62,7 @@ export function Shell({
             <span className="font-mono text-[11px] tracking-wide text-zinc-500">PCD</span>
             <span className="ml-2 text-[13px] font-medium text-zinc-950 sm:text-[14px]">Project Cargo Desk</span>
           </Link>
-          <p className="hidden truncate text-[12px] text-zinc-500 md:block">Prepared for Interfreight Group (demo)</p>
+          <p className="hidden truncate text-[12px] text-zinc-500 lg:block">Demo, can be customized to your process</p>
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
             <HelpMenu mode={mode} />
             <div className="flex items-center gap-2 text-[12px]" data-tour="view-as" role="group" aria-label="View as">
@@ -156,7 +156,14 @@ export function Shell({
             {children}
           </main>
           <footer className="no-print border-t border-zinc-200 px-4 py-4 text-[12px] leading-relaxed text-zinc-500 lg:px-8">
-            <p>Demo build by CasinWorks · Christian Joshua Casin</p>
+            <p>
+              Demo build by{" "}
+              <a className="underline" href="https://casinworks.com">
+                CasinWorks
+              </a>{" "}
+              · Christian Joshua Casin
+            </p>
+            <p className="mt-1">Demo, can be customized to your process.</p>
             <p className="mt-1">
               Prepared for Interfreight Group. Fictional sample data only. Not Interfreight’s system, rates, customers, or logo.
             </p>

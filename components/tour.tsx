@@ -11,14 +11,23 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { CUSTOMER_TOUR, TEAM_TOUR, type TourSide, type TourStep } from "@/lib/tour-steps";
 
 const OFFER_KEY = "pcd-tour-offer-v1";
+const WELCOME_KEY = "pcd-welcome-v1";
 
 type OfferState = { customer?: string; team?: string };
 
 type TourContextValue = {
   start: (side: TourSide) => void;
+  showWelcome: () => void;
 };
 
 const TourContext = createContext<TourContextValue | null>(null);
@@ -48,6 +57,8 @@ export function TourRoot({ mode, children }: { mode: TourSide; children: ReactNo
   const [side, setSide] = useState<TourSide | null>(null);
   const [index, setIndex] = useState(0);
   const [offer, setOffer] = useState(false);
+  const [welcome, setWelcome] = useState(false);
+  const welcomeChecked = useRef(false);
 
   const steps = side === "customer" ? CUSTOMER_TOUR : side === "team" ? TEAM_TOUR : [];
   const step = steps[index];
@@ -55,8 +66,13 @@ export function TourRoot({ mode, children }: { mode: TourSide; children: ReactNo
   useEffect(() => {
     const stored = readOffer();
     const quiet = pathname.startsWith("/handbook") || pathname.startsWith("/guide");
+    const seen = localStorage.getItem(WELCOME_KEY) === "dismissed";
     // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is read after mount
-    setOffer(!quiet && !stored[mode]);
+    setOffer(!quiet && !stored[mode] && seen);
+    if (!welcomeChecked.current) {
+      welcomeChecked.current = true;
+      setWelcome(!seen);
+    }
   }, [mode, pathname]);
 
   useEffect(() => {
@@ -67,7 +83,13 @@ export function TourRoot({ mode, children }: { mode: TourSide; children: ReactNo
     }
   }, [step, pathname, router]);
 
+  function dismissWelcome() {
+    localStorage.setItem(WELCOME_KEY, "dismissed");
+    setWelcome(false);
+  }
+
   function begin(next: TourSide) {
+    dismissWelcome();
     writeOffer(next);
     setOffer(false);
     setIndex(0);
@@ -81,9 +103,18 @@ export function TourRoot({ mode, children }: { mode: TourSide; children: ReactNo
   }
 
   return (
-    <TourContext.Provider value={{ start: begin }}>
+    <TourContext.Provider value={{ start: begin, showWelcome: () => setWelcome(true) }}>
       {children}
-      {offer && !side ? (
+      <WelcomeModal
+        open={welcome && !side}
+        onTour={() => begin(mode)}
+        onClose={() => {
+          dismissWelcome();
+          writeOffer(mode);
+          setOffer(false);
+        }}
+      />
+      {offer && !side && !welcome ? (
         <FirstPrompt
           mode={mode}
           onTour={() => begin(mode)}
@@ -107,6 +138,45 @@ export function TourRoot({ mode, children }: { mode: TourSide; children: ReactNo
         />
       ) : null}
     </TourContext.Provider>
+  );
+}
+
+function WelcomeModal({ open, onTour, onClose }: { open: boolean; onTour: () => void; onClose: () => void }) {
+  return (
+    <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-[22px] leading-snug">Welcome to Project Cargo Desk</DialogTitle>
+          <DialogDescription className="text-[16px] leading-relaxed text-zinc-800">
+            A demo inquiry and quotation desk prepared for Interfreight Group.
+          </DialogDescription>
+        </DialogHeader>
+        <p className="text-[16px] leading-relaxed text-zinc-800">Thank you for taking the time to try this.</p>
+        <p className="border border-zinc-300 bg-zinc-50 px-3 py-2 text-[16px] leading-relaxed text-zinc-900">
+          Demo notice. Sample data only. It is saved in this browser. Nothing is emailed or filed.
+        </p>
+        <p className="text-[16px] leading-relaxed text-zinc-800">
+          This is a starting point. Screens, steps, fields and wording can all be changed to match Interfreight&apos;s own business process.
+        </p>
+        <p className="text-[14px] text-zinc-600">
+          Prepared by{" "}
+          <a className="text-[#1e3a5f] underline" href="https://casinworks.com">
+            CasinWorks
+          </a>
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="min-h-11 bg-zinc-950 px-4 text-[16px] text-white" onClick={onTour}>
+            Take the tour
+          </button>
+          <Link href="/handbook" className="inline-flex min-h-11 items-center border border-zinc-300 px-4 text-[16px] text-zinc-950" onClick={onClose}>
+            Read the handbook
+          </Link>
+          <button type="button" className="min-h-11 px-3 text-[16px] text-zinc-800 underline" onClick={onClose}>
+            Explore on my own
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -193,6 +263,17 @@ export function HelpMenu({ mode }: { mode: TourSide }) {
           <Link role="menuitem" href="/guide" className="block px-3 py-2 text-[16px] text-zinc-950 hover:bg-zinc-100" onClick={() => setOpen(false)}>
             How to read this
           </Link>
+          <button
+            type="button"
+            role="menuitem"
+            className="block w-full px-3 py-2 text-left text-[16px] text-zinc-950 hover:bg-zinc-100"
+            onClick={() => {
+              setOpen(false);
+              tour.showWelcome();
+            }}
+          >
+            Show welcome
+          </button>
         </div>
       ) : null}
     </div>
